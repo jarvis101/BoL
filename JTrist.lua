@@ -65,7 +65,7 @@ function InitInterrupt()
 		if enemy.team ~= myHero.team then
 			for _, champ in pairs(InterruptList) do
 				if enemy.charName == champ.charName then
-					table.insert(interruptMe, champ.spellName)
+					table.insert(ToInterrupt, champ.spellName)
 				end
 			end
 		end
@@ -156,6 +156,7 @@ function OnLoad()
 	SOWi = SOW(VP)
 	SOWi:RegisterAfterAttackCallback(AutoAttackReset)
 	Menu()
+	InitInterrupt()
 	if myHero:GetSpellData(SUMMONER_1).name:find("SummonerDot") then 
 		ignite = SUMMONER_1
 	elseif myHero:GetSpellData(SUMMONER_2).name:find("SummonerDot") then 
