@@ -1,12 +1,12 @@
-local version = "1.0"
+local version = "1.1"
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
 local autoupdateenabled = true
-local UPDATE_SCRIPT_NAME = "JAniva"
+local UPDATE_SCRIPT_NAME = "JAnivia"
 local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/Jarvis101/BoL/master/JAniva.lua"
+local UPDATE_PATH = "/Jarvis101/BoL/master/JAnivia.lua"
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
@@ -35,7 +35,7 @@ if autoupdateenabled then
 	AddTickCallback(update)
 end
 
-if myHero.charName ~= "Aniva" then return end
+if myHero.charName ~= "Anivia" then PrintChat("You're not playing Anivia, you're playing "..myHero.charName)return end
 
 require "SOW"
 require "VPrediction"
@@ -43,63 +43,62 @@ require "VPrediction"
 local EAratio
 
 function Menu()
-	JAniva = scriptConfig("JTrist", "JTrist")
+	JAnivia = scriptConfig("JTrist", "JTrist")
 	
-    JAniva:addSubMenu("Combo", "CSettings")
-    JAniva.CSettings:addParam("useQ", "Use Q", SCRIPT_PARAM_ONOFF, true)
-    JAniva.CSettings:addParam("useW", "Use W", SCRIPT_PARAM_ONOFF, false)
-	JAniva.CSettings:addParam("useE", "Use E", SCRIPT_PARAM_ONOFF, true)
-    JAniva.CSettings:addParam("useR", "Use R", SCRIPT_PARAM_ONOFF, true)
-	JAniva.CSettings:addParam("useI", "Use Ignite", SCRIPT_PARAM_ONOFF, false)
+    JAnivia:addSubMenu("Combo", "CSettings")
+    JAnivia.CSettings:addParam("useQ", "Use Q", SCRIPT_PARAM_ONOFF, true)
+    JAnivia.CSettings:addParam("useW", "Use W", SCRIPT_PARAM_ONOFF, false)
+	JAnivia.CSettings:addParam("useE", "Use E", SCRIPT_PARAM_ONOFF, true)
+    JAnivia.CSettings:addParam("useR", "Use R", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.CSettings:addParam("useI", "Use Ignite", SCRIPT_PARAM_ONOFF, false)
 	
-	JAniva:addSubMenu("Harass", "HSettings")
-    JAniva.HSettings:addParam("useQ", "Use Q", SCRIPT_PARAM_ONOFF, true)
-    JAniva.HSettings:addParam("useW", "Use W", SCRIPT_PARAM_ONOFF, false)
-	JAniva.HSettings:addParam("useE", "Use E", SCRIPT_PARAM_ONOFF, true)
-    JAniva.HSettings:addParam("useR", "Use R", SCRIPT_PARAM_ONOFF, true)
+	JAnivia:addSubMenu("Harass", "HSettings")
+    JAnivia.HSettings:addParam("useQ", "Use Q", SCRIPT_PARAM_ONOFF, true)
+    JAnivia.HSettings:addParam("useW", "Use W", SCRIPT_PARAM_ONOFF, false)
+	JAnivia.HSettings:addParam("useE", "Use E", SCRIPT_PARAM_ONOFF, true)
+    JAnivia.HSettings:addParam("useR", "Use R", SCRIPT_PARAM_ONOFF, true)
 	
-	JAniva:addSubMenu("Skill Settings", "SSettings")
-	JAniva.SSettings:addParam("Vpred", "Use VPrediction", SCRIPT_PARAM_ONOFF, true)
-    JAniva.SSettings:addParam("Eblk", "Only use E on frozen targets", SCRIPT_PARAM_ONOFF, true)
-	JAniva.SSettings:addSubMenu("FOF", "Fight or flight")
-	JAniva.SSettings.FOF:addParam("efofr", "Enemy:Ally ratio(enemy)", SCRIPT_PARAM_SLICE, 5, 1, 5, 0)
-	JAniva.SSettings.FOF:addParam("afofr", "Enemy:Ally ratio(ally)", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
-	JAniva.SSettings.FOF:addParam("Ak", "E:A Ratio = "..JAniva.SSettings.FOF.efofr/JAniva.SSettings.FOF.afofa, SCRIPT_PARAM_INFO, "")
-	JAniva.SSettings.FOF:addParam("fofd", "within # distance of me", SCRIPT_PARAM_SLICE, 1000, 400, 2000, 0)
-	JAniva.SSettings.FOF:addParam("fofhp", "Minimum safe HP%", SCRIPT_PARAM_SLICE, 20, 5, 100, 0)
+	JAnivia:addSubMenu("Skill Settings", "SSettings")
+	JAnivia.SSettings:addParam("Vpred", "Use VPrediction", SCRIPT_PARAM_ONOFF, true)
+    JAnivia.SSettings:addParam("Eblk", "Only use E on frozen targets", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.SSettings:addSubMenu("FOF", "Fight or flight")
+	JAnivia.SSettings.FOF:addParam("efofr", "Enemy:Ally ratio(enemy)", SCRIPT_PARAM_SLICE, 5, 1, 5, 0)
+	JAnivia.SSettings.FOF:addParam("afofr", "Enemy:Ally ratio(ally)", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
+	JAnivia.SSettings.FOF:addParam("fofd", "within # distance of me", SCRIPT_PARAM_SLICE, 1000, 400, 2000, 0)
+	JAnivia.SSettings.FOF:addParam("fofhp", "Minimum safe HP%", SCRIPT_PARAM_SLICE, 20, 5, 100, 0)
 	
-	JAniva:addSubMenu("Item Settings", "ISettings")
-    JAniva.ISettings:addParam("IuseC", "Use items in combo", SCRIPT_PARAM_ONOFF, true)
-	JAniva.ISettings:addSubMenu("Combo Items", "Citems")
-    JAniva.ISettings.Citems:addParam("BWC", "Use Bilgewater Cutlass", SCRIPT_PARAM_ONOFF, true)
-    JAniva.ISettings.Citems:addParam("DFG", "Use DeathFire Grasp", SCRIPT_PARAM_ONOFF, true)
-	JAniva.ISettings.Citems:addParam("DFGwait", "Use DFG before E and R", SCRIPT_PARAM_ONOFF, true)
-	JAniva.ISettings.Citems:addParam("HEX", "Use Hextech Revolver", SCRIPT_PARAM_ONOFF, true)
-	JAniva.ISettings.Citems:addParam("FQC", "Use Frost Queen's Claim", SCRIPT_PARAM_ONOFF, true)
+	JAnivia:addSubMenu("Item Settings", "ISettings")
+    JAnivia.ISettings:addParam("IuseC", "Use items in combo", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.ISettings:addSubMenu("Combo Items", "Citems")
+    JAnivia.ISettings.Citems:addParam("BWC", "Use Bilgewater Cutlass", SCRIPT_PARAM_ONOFF, true)
+    JAnivia.ISettings.Citems:addParam("DFG", "Use DeathFire Grasp", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.ISettings.Citems:addParam("DFGwait", "Use DFG before E and R", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.ISettings.Citems:addParam("HEX", "Use Hextech Revolver", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.ISettings.Citems:addParam("FQC", "Use Frost Queen's Claim", SCRIPT_PARAM_ONOFF, true)
 	
-	JAniva:addSubMenu("KS", "KS")
-    JAniva.KS:addParam("ksQ", "KS with Q", SCRIPT_PARAM_ONOFF, true)
-    JAniva.KS:addParam("ksE", "KS with E", SCRIPT_PARAM_ONOFF, true)
-	JAniva.KS:addParam("ksR", "KS with R", SCRIPT_PARAM_ONOFF, true)
-    JAniva.KS:addParam("ksIgnite", "KS with Ignite", SCRIPT_PARAM_ONOFF, true)
+	JAnivia:addSubMenu("KS", "KS")
+    JAnivia.KS:addParam("ksQ", "KS with Q", SCRIPT_PARAM_ONOFF, true)
+    JAnivia.KS:addParam("ksE", "KS with E", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.KS:addParam("ksR", "KS with R", SCRIPT_PARAM_ONOFF, true)
+    JAnivia.KS:addParam("ksIgnite", "KS with Ignite", SCRIPT_PARAM_ONOFF, true)
 	
-	JAniva:addParam("Combo","Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
-	JAniva:addParam("Harass","Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-	JAniva:addParam("LaneClear","LaneClear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
+	JAnivia:addParam("Combo","Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+	JAnivia:addParam("Harass","Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+	JAnivia:addParam("LaneClear","LaneClear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
 	
-	JAniva:addSubMenu("draw", "draw")
-    JAniva.draw:addParam("drawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
-    JAniva.draw:addParam("drawW", "Draw W Range", SCRIPT_PARAM_ONOFF, false)
-	JAniva.draw:addParam("drawW", "Draw E Range", SCRIPT_PARAM_ONOFF, false)
-	JAniva.draw:addParam("drawW", "Draw R Range", SCRIPT_PARAM_ONOFF, false)
-    JAniva.draw:addParam("drawKill", "Draw Kill text", SCRIPT_PARAM_ONOFF, true)
-	JAniva:addSubMenu("Orbwalker", "SOWiorb")
+	JAnivia:addSubMenu("draw", "draw")
+    JAnivia.draw:addParam("drawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
+    JAnivia.draw:addParam("drawW", "Draw W Range", SCRIPT_PARAM_ONOFF, false)
+	JAnivia.draw:addParam("drawW", "Draw E Range", SCRIPT_PARAM_ONOFF, false)
+	JAnivia.draw:addParam("drawW", "Draw R Range", SCRIPT_PARAM_ONOFF, false)
+    JAnivia.draw:addParam("drawKill", "Draw Kill text", SCRIPT_PARAM_ONOFF, true)
+	JAnivia:addSubMenu("Orbwalker", "SOWiorb")
 	
-	JAniva:permaShow("Combo")
-    JAniva:permaShow("Harass")
-    JAniva:permaShow("LaneClear")
+	JAnivia:permaShow("Combo")
+    JAnivia:permaShow("Harass")
+    JAnivia:permaShow("LaneClear")
 	
-	SOWi:LoadToMenu(JAniva.SOWiorb)
+	SOWi:LoadToMenu(JAnivia.SOWiorb)
 end
 
 function OnLoad()
@@ -116,8 +115,8 @@ function OnLoad()
 	end
 	
 	ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1100, DAMAGE_PHYSICAL)	
-	ts.name = "Aniva"
-	JAniva:addTS(ts)
+	ts.name = "Anivia"
+	JAnivia:addTS(ts)
 end
 
 function checkItems()
@@ -167,8 +166,8 @@ function KS()
 			local Edmg = getDmg("E", champ, myHero)
 			local Rdmg = getDmg("R", champ, myHero)
 			local Idmg = getDmg("IGNITE", champ, myHero)
-			if JAniva.KS.ksQ and GetDistance(champ, myHero) < 1100 and champ.health < Qdmg and ValidTarget(champ) then
-				if JAniva.SSettings.Vpred then
+			if JAnivia.KS.ksQ and GetDistance(champ, myHero) < 1100 and champ.health < Qdmg and ValidTarget(champ) then
+				if JAnivia.SSettings.Vpred then
 					CastPosition, HitChance, Position = VP:GetLineCastPosition(champ, 0.250, 150, 1100, 800)
 					if HitChance == 2 or HitChance == 4 or HitChance == 5 then
 						castQ(champ)
@@ -177,13 +176,13 @@ function KS()
 					castQ(champ)
 				end
 			end
-			if JAniva.KS.ksE and GetDistance(champ, myHero) < 650 and champ.health < Edmg and ValidTarget(champ) then
+			if JAnivia.KS.ksE and GetDistance(champ, myHero) < 650 and champ.health < Edmg and ValidTarget(champ) then
 				castE(champ)
 			end
-			if JAniva.KS.ksR and GetDistance(champ, myHero) < 615 and champ.health < Rdmg and ValidTarget(champ) then
+			if JAnivia.KS.ksR and GetDistance(champ, myHero) < 615 and champ.health < Rdmg and ValidTarget(champ) then
 				castR(champ)
 			end
-			if JAniva.KS.ksI and GetDistance(champ, myHero) < 500 and champ.health < Idmg and ValidTarget(champ) then
+			if JAnivia.KS.ksI and GetDistance(champ, myHero) < 500 and champ.health < Idmg and ValidTarget(champ) then
 				CastSpell(ignite, champ)
 			end
 		end
@@ -192,23 +191,23 @@ end
 
 function Combo()
 	--WIP
-	if JAniva.ISettings.IuseC then
-		if JAniva.ISettings.Citems.DFG and DFGR and GetDistance(Target, myHero) < 500 then
+	if JAnivia.ISettings.IuseC then
+		if JAnivia.ISettings.Citems.DFG and DFGR and GetDistance(Target, myHero) < 500 then
 			CastSpell(DFG, Target)
 		end
-		if JAniva.ISettings.Citems.HEX and HexTechR and GetDistance(Target, myHero) < 500 then
+		if JAnivia.ISettings.Citems.HEX and HexTechR and GetDistance(Target, myHero) < 500 then
 			CastSpell(HexTech, Target)
 		end
-		if JAniva.ISettings.Citems.FQC and FQCR and GetDistance(Target, myHero) < 850 then
+		if JAnivia.ISettings.Citems.FQC and FQCR and GetDistance(Target, myHero) < 850 then
 			CastSpell(FQC, Target)
 		end
-		if JAniva.ISettings.Citems.BWC and BilgeWaterCutlassR and GetDistance(Target, myHero) < 500 then
+		if JAnivia.ISettings.Citems.BWC and BilgeWaterCutlassR and GetDistance(Target, myHero) < 500 then
 			CastSpell(BilgeWaterCutlass)
 		end
 	end
-	if JAniva.CSettings.useQ then
+	if JAnivia.CSettings.useQ then
 		if GetDistance(Target, myHero) < 1100 then
-			if JAniva.SSettings.Vpred then
+			if JAnivia.SSettings.Vpred then
 				CastPosition, HitChance, Position = VP:GetLineCastPosition(champ, 0.250, 150, 1100, 800)
 				if HitChance == 2 or HitChance == 4 or HitChance == 5 then
 					castQ(champ)
@@ -232,20 +231,20 @@ function FoF()
 	for i=1, heroManager.iCount, 1 do
 		local champ = heroManager:GetHero(i)
 		if champ.team ~= myHero.team then
-			if GetDistance(champ, myHero) < JAniva.SSettings.FOF.fofd then
+			if GetDistance(champ, myHero) < JAnivia.SSettings.FOF.fofd then
 				ecount = ecount + 1
 			end
 		end
 		if champ.team == myHero.team and champ ~= myHero then
-			if GetDistance(champ,myHero) < JAniva.SSettings.FOF.fofd then
+			if GetDistance(champ,myHero) < JAnivia.SSettings.FOF.fofd then
 				acount = acount + 1
 			end
 		end
 	end
-	if acount*100/ecount < JAniva.SSettings.FOF.afofr*100/JAniva.SSettings.FOF.efofr then
+	if acount*100/ecount < JAnivia.SSettings.FOF.afofr*100/JAnivia.SSettings.FOF.efofr then
 		return false
 	end
-	if myHero.maxHealth/myHero.health < JAniva.SSettings.FOF.fofhp then
+	if myHero.maxHealth/myHero.health < JAnivia.SSettings.FOF.fofhp then
 		return false
 	end
 	return fight
