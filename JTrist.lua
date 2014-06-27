@@ -1,4 +1,4 @@
-local version = "1.23"
+local version = "1.24"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -386,6 +386,9 @@ function Combo()
             castR(Target)
         end
     end
+	if JTrist.CSettings.useI then
+		CastSpell(ignite, Target)
+	end
 end
 
 function Harass()
