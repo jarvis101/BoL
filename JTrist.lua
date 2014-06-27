@@ -1,4 +1,4 @@
-local version = "1.25"
+local version = "1.26"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -504,7 +504,7 @@ function analyzeCombat(targ)
 	local Cdmg = 0
 	if not DFGR then
 		Cdmg = Wdmg + Edmg + Rdmg
-		if Lichdmg ~= nil thhen Cdmg = Cdmg + Lichdmg end
+		if Lichdmg ~= nil then Cdmg = Cdmg + Lichdmg end
 		if hexTechdmg ~= nil then Cdmg = Cdmg + hexTechdmg end
 		if Blgdmg ~= nil then Cdmg = Cdmg + Blgdmg end
 	else
