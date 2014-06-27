@@ -1,4 +1,4 @@
-local version = "1.20"
+local version = "1.21"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -111,10 +111,10 @@ function Menu()
 	JTrist.HSettings.WSettings:addParam("safeWrange", "Safety Distance", SCRIPT_PARAM_SLICE, 1000, 500 , 2000, 0)
 	JTrist.HSettings.WSettings:addParam("vectoredW", "Try to jump in front of the target", SCRIPT_PARAM_ONOFF, true)
 	
-    JTrist:addSubMenu("IntOpt", "IntOpt")
+    JTrist:addSubMenu("Interrupt Opts", "IntOpt")
     JTrist.IntOpt:addParam("IntOpt", "Interrupt channels and dangerous spells", SCRIPT_PARAM_ONOFF, true)
 
-    JTrist:addSubMenu("ISettings", "ISettings")
+    JTrist:addSubMenu("Item Settings", "ISettings")
     JTrist.ISettings:addParam("IuseC", "Use items in combo", SCRIPT_PARAM_ONOFF, true)
 	JTrist.ISettings:addSubMenu("Combo Items", "Citems")
     JTrist.ISettings.Citems:addParam("BOTRK", "Use Ruined king", SCRIPT_PARAM_ONOFF, true)
@@ -124,8 +124,8 @@ function Menu()
 	JTrist.ISettings.Citems:addParam("FQC", "Use Frost Queen's Claim", SCRIPT_PARAM_ONOFF, true)
 	JTrist.ISettings.Citems:addParam("SOTD", "Use Sword of the Divine", SCRIPT_PARAM_ONOFF, true)
 	JTrist.ISettings.Citems:addParam("YGB", "Use Yomuu's Ghost Blade", SCRIPT_PARAM_ONOFF, true)
-	JTrist.ISettings:addParam("IuseH", "IuseH", SCRIPT_PARAM_ONOFF, false)
-	JTrist.ISettings:addSubMenu("Hitems", "Hitems")
+	JTrist.ISettings:addParam("IuseH", "Use items in harass", SCRIPT_PARAM_ONOFF, false)
+	JTrist.ISettings:addSubMenu("Harass Items", "Hitems")
     JTrist.ISettings.Hitems:addParam("BOTRK", "Use Ruined king", SCRIPT_PARAM_ONOFF, false)
     JTrist.ISettings.Hitems:addParam("BWC", "Use Bilgewater Cutlass", SCRIPT_PARAM_ONOFF, false)
     JTrist.ISettings.Hitems:addParam("DFG", "Use DeathFire Grasp", SCRIPT_PARAM_ONOFF, false)
@@ -151,6 +151,10 @@ function Menu()
     JTrist.draw:addParam("drawKill", "Draw Kill text", SCRIPT_PARAM_ONOFF, true)
 	JTrist:addSubMenu("Orbwalker", "SOWiorb")
 	SOWi:LoadToMenu(JTrist.SOWiorb)
+	
+	JTrist:permaShow("Combo")
+    JTrist:permaShow("Harass")
+    JTrist:permaShow("Intercept")
 end
 
 function OnLoad()
