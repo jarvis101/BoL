@@ -108,7 +108,7 @@ function Menu()
 	JTrist.HSettings:addParam("useE", "Use E", SCRIPT_PARAM_ONOFF, true)
 	JTrist.HSettings:addSubMenu("W Settings", "WSettings")
 	JTrist.HSettings.WSettings:addParam("Ak", "Don't use W if more than #", SCRIPT_PARAM_INFO, "")
-	JTrist.HSettings.WSettings:addParam("safeW", "enemies around", SCRIPT_PARAM_SLICE, 2, 1, 4, 0)
+	JTrist.HSettings.WSettings:addParam("safeW", "enemies around", SCRIPT_PARAM_SLICE, 4, 1, 4, 0)
 	JTrist.HSettings.WSettings:addParam("safeWrange", "Safety Distance", SCRIPT_PARAM_SLICE, 1000, 500 , 2000, 0)
 	JTrist.HSettings.WSettings:addParam("vectoredW", "Try to jump in front of the target", SCRIPT_PARAM_ONOFF, true)
 	
@@ -121,6 +121,7 @@ function Menu()
     JTrist.ISettings.Citems:addParam("BOTRK", "Use Ruined king", SCRIPT_PARAM_ONOFF, true)
     JTrist.ISettings.Citems:addParam("BWC", "Use Bilgewater Cutlass", SCRIPT_PARAM_ONOFF, true)
     JTrist.ISettings.Citems:addParam("DFG", "Use DeathFire Grasp", SCRIPT_PARAM_ONOFF, true)
+	JTrist.ISettings.Citems:addParam("DFGwait", "Use DFG before E and R", SCRIPT_PARAM_ONOFF, true)
 	JTrist.ISettings.Citems:addParam("HEX", "Use Hextech Revolver", SCRIPT_PARAM_ONOFF, true)
 	JTrist.ISettings.Citems:addParam("FQC", "Use Frost Queen's Claim", SCRIPT_PARAM_ONOFF, true)
 	JTrist.ISettings.Citems:addParam("SOTD", "Use Sword of the Divine", SCRIPT_PARAM_ONOFF, true)
@@ -195,52 +196,8 @@ function checkItems()
 end
 
 function useItems()
-	if JTrist.ISettings.IuseC then
-		if JTrist.ISettings.Citems.BOTRK and BotRKR and GetDistance(Target, myHero) < 450 then
-			CastSpell(BotRK, Target)
-		end
-		if JTrist.ISettings.Citems.DFG and DFGR and GetDistance(Target, myHero) < 500 then
-			CastSpell(DFG, Target)
-		end
-		if JTrist.ISettings.Citems.HEX and HexTechR and GetDistance(Target, myHero) < 500 then
-			CastSpell(HexTech, Target)
-		end
-		if JTrist.ISettings.Citems.FQC and FQCR and GetDistance(Target, myHero) < 850 then
-			CastSpell(FQC, Target)
-		end
-		if JTrist.ISettings.Citems.YGB and YGBR and GetDistance(Target, myHero) < getTrange() then
-			CastSpell(YGB)
-		end
-		if JTrist.ISettings.Citems.SOTD and SotDR and GetDistance(Target, myHero) < getTrange() then
-			CastSpell(SotD)
-		end
-		if JTrist.ISettings.Citems.BWC and BilgeWaterCutlassR and GetDistance(Target, myHero) < 500 then
-			CastSpell(BilgeWaterCutlass)
-		end
-	end
-	if JTrist.ISettings.IuseH then
-		if JTrist.ISettings.Hitems.BOTRK and BotRKR and GetDistance(Target, myHero) < 450 then
-			CastSpell(BotRK, Target)
-		end
-		if JTrist.ISettings.Hitems.DFG and DFGR and GetDistance(Target, myHero) < 500 then
-			CastSpell(DFG, Target)
-		end
-		if JTrist.ISettings.Hitems.HEX and HexTechR and GetDistance(Target, myHero) < 500 then
-			CastSpell(HexTech, Target)
-		end
-		if JTrist.ISettings.Hitems.FQC and FQCR and GetDistance(Target, myHero) < 850 then
-			CastSpell(FQC, Target)
-		end
-		if JTrist.ISettings.Hitems.YGB and YGBR and GetDistance(Target, myHero) < getTrange() then
-			CastSpell(YGB)
-		end
-		if JTrist.ISettings.Hitems.SOTD and SotDR and GetDistance(Target, myHero) < getTrange() then
-			CastSpell(SotD)
-		end
-		if JTrist.ISettings.Hitems.BWC and BilgeWaterCutlassR and GetDistance(Target, myHero) < 500 then
-			CastSpell(BilgeWaterCutlass)
-		end
-	end
+	
+	
 end
 
 function getAAdmg(targ)
@@ -251,8 +208,7 @@ function getAAdmg(targ)
 end
 
 function getTrange()
-	foo = ( 550 + (myHero.level - 1)*9)
-	return foo
+	return myHero.range
 end
 
 function OnDraw()
@@ -356,7 +312,29 @@ function KS()
 end
 
 function Combo()
-	useItems()
+	if JTrist.ISettings.IuseC then
+		if JTrist.ISettings.Citems.BOTRK and BotRKR and GetDistance(Target, myHero) < 450 then
+			CastSpell(BotRK, Target)
+		end
+		if JTrist.ISettings.Citems.DFG and DFGR and GetDistance(Target, myHero) < 500 then
+			CastSpell(DFG, Target)
+		end
+		if JTrist.ISettings.Citems.HEX and HexTechR and GetDistance(Target, myHero) < 500 then
+			CastSpell(HexTech, Target)
+		end
+		if JTrist.ISettings.Citems.FQC and FQCR and GetDistance(Target, myHero) < 850 then
+			CastSpell(FQC, Target)
+		end
+		if JTrist.ISettings.Citems.YGB and YGBR and GetDistance(Target, myHero) < getTrange() then
+			CastSpell(YGB)
+		end
+		if JTrist.ISettings.Citems.SOTD and SotDR and GetDistance(Target, myHero) < getTrange() then
+			CastSpell(SotD)
+		end
+		if JTrist.ISettings.Citems.BWC and BilgeWaterCutlassR and GetDistance(Target, myHero) < 500 then
+			CastSpell(BilgeWaterCutlass)
+		end
+	end
     if JTrist.CSettings.useQ then
         if Qrdy and (GetDistance(Target) < getTrange()) then
             castQ()
@@ -364,12 +342,12 @@ function Combo()
     end
     if JTrist.CSettings.useW then
         if Wrdy and (GetDistance(Target) < 900) then
-			if SafetyCheck(JTrist.CSettings.WSettings.safeWrange, Target) > JTrist.CSettings.WSettings.safeW then return
+			if JTrist.CSettings.WSettings.safeW < 4 and SafetyCheck(JTrist.CSettings.WSettings.safeWrange, Target) > JTrist.CSettings.WSettings.safeW then return
 			else
 				local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
 				if HitChance == 2 or HitChance == 4 or HitChance == 5 then
 					if JTrist.CSettings.WSettings.vectoredW then
-						local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
+						local vectorX,y,vectorZ = (Vector(Target) - Vector(myHero)):normalized():unpack()
 						CastPosition.x = CastPosition.x + (vectorX * 125)
 						CastPosition.z = CastPosition.z + (vectorZ * 125)
 						castW(CastPosition)
@@ -382,12 +360,20 @@ function Combo()
     end
     if JTrist.CSettings.useE then
         if Erdy and (GetDistance(Target) < getTrange()) then
-            castE(Target)
+			if JTrist.ISettings.Citems.DFGwait and not DFGR then
+				castE(Target)
+			else
+				castE(Target)
+			end
         end
     end
     if JTrist.CSettings.useR then
         if Rrdy and (GetDistance(Target) < getTrange()) then
-            castR(Target)
+            if JTrist.ISettings.Citems.DFGwait and not DFGR then
+				castR(Target)
+			else
+				castR(Target)
+			end
         end
     end
 	if JTrist.CSettings.useI then
@@ -396,15 +382,37 @@ function Combo()
 end
 
 function Harass()
-	useItems()
+	if JTrist.ISettings.IuseH then
+		if JTrist.ISettings.Hitems.BOTRK and BotRKR and GetDistance(Target, myHero) < 450 then
+			CastSpell(BotRK, Target)
+		end
+		if JTrist.ISettings.Hitems.DFG and DFGR and GetDistance(Target, myHero) < 500 then
+			CastSpell(DFG, Target)
+		end
+		if JTrist.ISettings.Hitems.HEX and HexTechR and GetDistance(Target, myHero) < 500 then
+			CastSpell(HexTech, Target)
+		end
+		if JTrist.ISettings.Hitems.FQC and FQCR and GetDistance(Target, myHero) < 850 then
+			CastSpell(FQC, Target)
+		end
+		if JTrist.ISettings.Hitems.YGB and YGBR and GetDistance(Target, myHero) < getTrange() then
+			CastSpell(YGB)
+		end
+		if JTrist.ISettings.Hitems.SOTD and SotDR and GetDistance(Target, myHero) < getTrange() then
+			CastSpell(SotD)
+		end
+		if JTrist.ISettings.Hitems.BWC and BilgeWaterCutlassR and GetDistance(Target, myHero) < 500 then
+			CastSpell(BilgeWaterCutlass)
+		end
+	end
 	if JTrist.HSettings.useW then
         if Wrdy and (GetDistance(Target) < 900) then
-			if SafetyCheck(JTrist.HSettings.WSettings.safeWrange, Target) > JTrist.HSettings.WSettings.safeW then return
+			if JTrist.HSettings.WSettings.safeW < 4 and SafetyCheck(JTrist.HSettings.WSettings.safeWrange, Target) > JTrist.HSettings.WSettings.safeW then return
 			else
 				local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
 				if HitChance == 2 or HitChance == 4 or HitChance == 5 then
 					if JTrist.HSettings.WSettings.vectoredW then
-						local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
+						local vectorX,y,vectorZ = (Vector(Target) - Vector(myHero)):normalized():unpack()
 						CastPosition.x = CastPosition.x + (vectorX * 125)
 						CastPosition.z = CastPosition.z + (vectorZ * 125)
 						castW(CastPosition)
@@ -426,7 +434,7 @@ function IntPult()
 	if Wrdy and Rrdy and GetDistance(Target) < 750 and not Wused then
 		local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
 		if HitChance == 2 or HitChance == 4 or HitChance == 5 then
-			local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
+			local vectorX,y,vectorZ = (Vector(Target) - Vector(myHero)):normalized():unpack()
 			CastPosition.x = CastPosition.x + (vectorX * 125)
 			CastPosition.z = CastPosition.z + (vectorZ * 125)
 			Wused = true
