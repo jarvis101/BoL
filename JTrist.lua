@@ -1,37 +1,35 @@
-local version = "0.1"
---[[JTrist by Jarvis101
-]]--
+local version = "1.00"
 
+local autoupdateenabled = true
+local UPDATE_SCRIPT_NAME = "JTrist"
+local UPDATE_HOST = "raw.github.com"
+local UPDATE_PATH = "/Jarvis101/BoL/master/JTrist.lua"
+local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
-if myHero.charName ~= "Tristana" then return end
-function Initiate()
-		local scriptName = "JTrist"
-		printMessage = function(message) print("<font color=\"#00A300\"><b>"..scriptName..":</b></font> <font color=\"#FFFFFF\">"..message.."</font>") end
-		if FileExist(LIB_PATH.."SourceLib.lua") then
-			require 'SourceLib'
-		else
-			printMessage("Downloading SourceLib, please wait whilst the required library is being downloaded.")
-			DownloadFile("https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua",LIB_PATH.."SourceLib.lua", function() printMessage("SourceLib successfully downloaded, please reload (double [F9]).") end)
-			return true
-		end
-		local libDownloader = Require(scriptName)
-		libDownloader:Add("JTrist",	 "https://raw.github.com/Jarvis101/BoL/master/JTrist.lua")
-		libDownloader:Check()
-		if libDownloader.downloadNeeded then printMessage("Downloading required libraries, please wait whilst the required files are being downloaded.") return true end
-		SourceUpdater(scriptName, version, "raw.github.com", "/Jarvis101/BoL/master/JTrist.lua", SCRIPT_PATH..GetCurrentEnv().FILE_NAME, "/Jarvis101/BoL/master/JTrist.version"):CheckUpdate()
-		return false
-	end
-	if Initiate() then return end
-	printMessage("Loaded")	AutoupdaterMsg("New version available"..ServerVersion)
-				AutoupdaterMsg("Updating, please don't press F9")
-				DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end)	 
-			else
-				AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
+local ServerData
+if autoupdateenabled then
+	GetAsyncWebResult(UPDATE_HOST, UPDATE_PATH, function(d) ServerData = d end)
+	function update()
+		if ServerData ~= nil then
+			local ServerVersion
+			local send, tmp, sstart = nil, string.find(ServerData, "local version = \"")
+			if sstart then
+				send, tmp = string.find(ServerData, "\"", sstart+1)
 			end
+			if send then
+				ServerVersion = string.sub(ServerData, sstart+1, send-1)
+			end
+
+			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
+				DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"><b>"..UPDATE_SCRIPT_NAME..":</b> successfully updated. ("..version.." => "..ServerVersion..")</font>") end)     
+			elseif ServerVersion then
+				print("<font color=\"#FF0000\"><b>"..UPDATE_SCRIPT_NAME..":</b> You have got the latest version: <u><b>"..ServerVersion.."</b></u></font>")
+			end		
+			ServerData = nil
 		end
-	else
-		AutoupdaterMsg("Error downloading version info")
 	end
+	AddTickCallback(update)
 end
 
 require "SOW"
@@ -129,7 +127,7 @@ function Menu()
 end
 
 function OnLoad()
-	Initiate()
+	getVersion()
 	VP = VPrediction()
 	SOWi = SOW(VP)
 	SOWi:RegisterAfterAttackCallback(AutoAttackReset)
