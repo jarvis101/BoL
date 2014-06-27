@@ -1,4 +1,4 @@
-local version = "1.21"
+local version = "1.22"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -96,7 +96,7 @@ function Menu()
 	JTrist.CSettings:addParam("useE", "Use E", SCRIPT_PARAM_ONOFF, true)
     JTrist.CSettings:addParam("useR", "Use R", SCRIPT_PARAM_ONOFF, false)
     JTrist.CSettings:addSubMenu("W Settings", "WSettings")
-	JTrist.CSettings.WSettings:addParam("Ak", "Don't use W if more than #", SCRIPT_PARAM_INFO, "")
+	JTrist.CSettings.WSettings:addParam("random", "Don't use W if more than #", SCRIPT_PARAM_INFO, "")
     JTrist.CSettings.WSettings:addParam("safeW", "enemies around", SCRIPT_PARAM_SLICE, 2, 1, 4, 0)
     JTrist.CSettings.WSettings:addParam("safeWrange", "Safety Distance", SCRIPT_PARAM_SLICE, 1000, 500 , 2000, 0)
 	JTrist.CSettings.WSettings:addParam("vectoredW", "Try to jump in front of the target", SCRIPT_PARAM_ONOFF, true)
@@ -187,6 +187,59 @@ function checkItems()
 	FQCR = (FQC ~= nil and myHero:CanUseSpell(FQC) == READY)
 	YGB = GetInventorySlotItem(3142)
 	YGBR = (YGB ~= nil and myHero:CanUseSpell(YGB) == READY)
+	BotRK = GetInventorySlotItem(3153)
+	BotRKR = (BotRK ~= nil and myHero:CanUseSpell(BotRK) == READY)
+	SotD = GetInventorySlotItem(3131)
+	SotDR = (SotD ~= nil and myHero:CanUseSpell(YGB) == READY)
+end
+
+function useItems()
+	if JTrist.ISettings.IuseC then
+		if JTrist.ISettings.Citems.BOTRK and BotRKR and GetDistance(Target, myHero) < 450 then
+			CastSpell(BotRK, Target)
+		end
+		if JTrist.ISettings.Citems.DFG and DFGR and GetDistance(Target, myHero) < 500 then
+			CastSpell(DFG, Target)
+		end
+		if JTrist.ISettings.Citems.HEX and HexTechR and GetDistance(Target, myHero) < 500 then
+			CastSpell(HexTech, Target)
+		end
+		if JTrist.ISettings.Citems.FQC and FQCR and GetDistance(Target, myHero) < 850 then
+			CastSpell(FQC, Target)
+		end
+		if JTrist.ISettings.Citems.YGB and YGBR and GetDistance(Target, myHero) < getTrange() then
+			CastSpell(YGB)
+		end
+		if JTrist.ISettings.Citems.SOTD and SotDR and GetDistance(Target, myHero) < getTrange() then
+			CastSpell(SotD)
+		end
+		if JTrist.ISettings.Citems.BWC and BilgeWaterCutlassR and GetDistance(Target, myHero) < 500 then
+			CastSpell(BilgeWaterCutlass)
+		end
+	end
+	if JTrist.ISettings.IuseH then
+		if JTrist.ISettings.Hitems.BOTRK and BotRKR and GetDistance(Target, myHero) < 450 then
+			CastSpell(BotRK, Target)
+		end
+		if JTrist.ISettings.Hitems.DFG and DFGR and GetDistance(Target, myHero) < 500 then
+			CastSpell(DFG, Target)
+		end
+		if JTrist.ISettings.Hitems.HEX and HexTechR and GetDistance(Target, myHero) < 500 then
+			CastSpell(HexTech, Target)
+		end
+		if JTrist.ISettings.Hitems.FQC and FQCR and GetDistance(Target, myHero) < 850 then
+			CastSpell(FQC, Target)
+		end
+		if JTrist.ISettings.Hitems.YGB and YGBR and GetDistance(Target, myHero) < getTrange() then
+			CastSpell(YGB)
+		end
+		if JTrist.ISettings.Hitems.SOTD and SotDR and GetDistance(Target, myHero) < getTrange() then
+			CastSpell(SotD)
+		end
+		if JTrist.ISettings.Hitems.BWC and BilgeWaterCutlassR and GetDistance(Target, myHero) < 500 then
+			CastSpell(BilgeWaterCutlass)
+		end
+	end
 end
 
 function getAAdmg(targ)
@@ -212,7 +265,7 @@ function OnDraw()
 		for i=1, heroManager.iCount, 1 do
 			local champ = heroManager:GetHero(i)
 			if ValidTarget(champ) and champ.team ~= myHero.team then
-				--DrawText3D(analyzeCombat(champ), champ.x, champ.y, champ.z, 20, RGB(255, 255, 255), true)
+				DrawText3D(analyzeCombat(champ), champ.x, champ.y, champ.z, 20, RGB(255, 255, 255), true)
 			end
 		end
 	end
@@ -299,6 +352,7 @@ function KS()
 end
 
 function Combo()
+	useItems()
     if JTrist.CSettings.useQ then
         if Qrdy and (GetDistance(Target) < getTrange()) then
             castQ()
@@ -339,6 +393,7 @@ function Combo()
 end
 
 function Harass()
+	useItems()
 	if JTrist.HSettings.useW then
         if Wrdy and (GetDistance(Target) < 900) then
 			if SafetyCheck(JTrist.HSettings.WSettings.safeWrange, Target) > JTrist.HSettings.WSettings.safeW then return
@@ -459,7 +514,7 @@ function analyzeCombat(targ)
 		Cdmg = ((Wdmg + Edmg + Rdmg)*1.2) + idmg + Lichdmg + hexTechdmg + Blgdmg + dfgdmg
 	end
 	
-	if targ.health < Burstdmg then
+	if targ.health < Cdmg then
 		rTxt = "Burst him!"
 	else 
 		rTxt = "Harassable"
