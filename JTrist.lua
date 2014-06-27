@@ -1,7 +1,8 @@
+local version = "0.1"
 --[[JTrist by Jarvis101
 ]]--
 
-local version = "0.1"
+
 if myHero.charName ~= "Tristana" then return end
 local AUTOUPDATE = true
 local UPDATE_SCRIPT_NAME = "JTrist"
