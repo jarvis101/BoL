@@ -1,4 +1,4 @@
-local version = "0.02"
+local version = "0.03"
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
@@ -61,7 +61,7 @@ function Menu()
 	JAnivia:addSubMenu("Skill Settings", "SSettings")
 	JAnivia.SSettings:addParam("Vpred", "Use VPrediction", SCRIPT_PARAM_ONOFF, true)
     JAnivia.SSettings:addParam("Eblk", "Only use E on frozen targets", SCRIPT_PARAM_ONOFF, true)
-	JAnivia.SSettings:addSubMenu("FOF", "Fight or flight")
+	JAnivia.SSettings:addSubMenu("Fight or flight", "FOF")
 	JAnivia.SSettings.FOF:addParam("efofr", "Enemy:Ally ratio(enemy)", SCRIPT_PARAM_SLICE, 5, 1, 5, 0)
 	JAnivia.SSettings.FOF:addParam("afofr", "Enemy:Ally ratio(ally)", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
 	JAnivia.SSettings.FOF:addParam("fofd", "within # distance of me", SCRIPT_PARAM_SLICE, 1000, 400, 2000, 0)
