@@ -1,4 +1,4 @@
-local version = "0.03"
+local version = "1.01"
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
