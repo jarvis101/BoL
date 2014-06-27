@@ -127,7 +127,6 @@ function Menu()
 end
 
 function OnLoad()
-	getVersion()
 	VP = VPrediction()
 	SOWi = SOW(VP)
 	SOWi:RegisterAfterAttackCallback(AutoAttackReset)
