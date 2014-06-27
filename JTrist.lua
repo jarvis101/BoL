@@ -8,7 +8,7 @@ local AUTOUPDATE = true
 local UPDATE_SCRIPT_NAME = "JTrist"
 local UPDATE_NAME = "JTrist"
 local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/Jarvis101/BoL/JTrist.lua".."?rand="..math.random(1,10000)
+local UPDATE_PATH = "/Jarvis101/BoL/master/JTrist.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>"..UPDATE_NAME..":</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
