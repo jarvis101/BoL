@@ -1,4 +1,4 @@
-local version = "1.00"
+local version = "1.10"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -24,7 +24,7 @@ if autoupdateenabled then
 			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
 				DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"><b>"..UPDATE_SCRIPT_NAME..":</b> successfully updated. ("..version.." => "..ServerVersion..")</font>") end)     
 			elseif ServerVersion then
-				print("<font color=\"#FF0000\"><b>"..UPDATE_SCRIPT_NAME..":</b> You have got the latest version: <u><b>"..ServerVersion.."</b></u></font>")
+				print("<font color=\"#FF0000\"><b>"..UPDATE_SCRIPT_NAME..":</b> You have got the latest version: <u><b>"..ServerVersion..". Press F9 Twice to Re-load.</b></u></font>")
 			end		
 			ServerData = nil
 		end
@@ -36,7 +36,7 @@ require "SOW"
 require "VPrediction"
 
 local Wused = false
---[[
+
 local ToInterrupt = {}
 
 local InterruptList = {
@@ -58,7 +58,32 @@ local InterruptList = {
 	{ charName = "Velkoz", spellName = "VelkozR"},
 	{ charName = "MonkeyKing", spellName = "MonkeyKingSpinToWin"}
 }
-]]--
+
+function InitInterrupt()
+	for i = 1, heroManager.iCount, 1 do
+		local enemy = heroManager:getHero(i)
+		if enemy.team ~= myHero.team then
+			for _, champ in pairs(InterruptList) do
+				if enemy.charName == champ.charName then
+					table.insert(interruptMe, champ.spellName)
+				end
+			end
+		end
+	end
+end
+
+function OnProcessSpell(unit, spell)
+	if #ToInterrupt > 0 and JTrist.IntOpt and Rrdy then
+		for _, ability in pairs(ToInterrupt) do
+			if spell.name == ability and unit.team ~= myHero.team then
+				if GetDistance(unit,myHero) <= (getTrange() - 10) then
+					CastR(unit)
+				end
+			end
+		end
+	end
+end
+
 function Menu()
 
     JTrist = scriptConfig("JTrist", "JTrist")
