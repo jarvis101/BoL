@@ -1,4 +1,4 @@
-local version = "1.24"
+local version = "1.25"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -95,6 +95,7 @@ function Menu()
     JTrist.CSettings:addParam("useW", "Use W", SCRIPT_PARAM_ONOFF, true)
 	JTrist.CSettings:addParam("useE", "Use E", SCRIPT_PARAM_ONOFF, true)
     JTrist.CSettings:addParam("useR", "Use R", SCRIPT_PARAM_ONOFF, false)
+	JTrist.CSettings:addParam("useI", "Use Ignite", SCRIPT_PARAM_ONOFF, true)
     JTrist.CSettings:addSubMenu("W Settings", "WSettings")
 	JTrist.CSettings.WSettings:addParam("random", "Don't use W if more than #", SCRIPT_PARAM_INFO, "")
     JTrist.CSettings.WSettings:addParam("safeW", "enemies around", SCRIPT_PARAM_SLICE, 2, 1, 4, 0)
@@ -137,7 +138,7 @@ function Menu()
     JTrist:addSubMenu("KS", "KS")
     JTrist.KS:addParam("ksW", "KS with W", SCRIPT_PARAM_ONOFF, true)
     JTrist.KS:addParam("ksR", "KS with R", SCRIPT_PARAM_ONOFF, true)
-    JTrist.KS:addParam("ksIgnite", "Killsteal with Ignite", SCRIPT_PARAM_ONOFF, true)
+    JTrist.KS:addParam("ksIgnite", "KS with Ignite", SCRIPT_PARAM_ONOFF, true)
 
 	
 	JTrist:addParam("Combo","Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
@@ -303,17 +304,17 @@ function KS()
 	for i=1, heroManager.iCount, 1 do
 		local champ = heroManager:GetHero(i)
 		if champ.team ~= myHero.team then
-			if GetDmg("W", champ, myHero) > champ.health and ValidTarget(champ) and GetDistance(champ, myHero) < 900 then
+			if getDmg("W", champ, myHero) > champ.health and ValidTarget(champ) and GetDistance(champ, myHero) < 900 then
 				wkill = true
 				targ = champ
 				break
 			end
-			if GetDmg("R", champ, myHero) > champ.health and ValidTarget(champ) and GetDistance(champ, myHero) < getTrange() then
+			if getDmg("R", champ, myHero) > champ.health and ValidTarget(champ) and GetDistance(champ, myHero) < getTrange() then
 				rkill = true
 				targ = champ
 				break
 			end
-			if (GetDmg("R", champ, myHero) + GetDmg("E", champ, myHero)) > champ.health and ValidTarget(champ) and GetDistance(champ, myHero) < 900 then
+			if (getDmg("R", champ, myHero) + getDmg("E", champ, myHero)) > champ.health and ValidTarget(champ) and GetDistance(champ, myHero) < 900 then
 				rwkill = true
 				targ = champ
 				break
@@ -347,6 +348,9 @@ function KS()
 				Wused = true
 				castW(targ)
 			end
+		end
+		if JTrist.CSettings.useI then
+			CastSpell(ignite, Target)
 		end
 	end
 end
@@ -499,9 +503,16 @@ function analyzeCombat(targ)
 	if not Irdy then idmg = 0 end
 	local Cdmg = 0
 	if not DFGR then
-		Cdmg = Wdmg + Edmg + Rdmg + idmg + Lichdmg + hexTechdmg + Blgdmg + dfgdmg
+		Cdmg = Wdmg + Edmg + Rdmg
+		if Lichdmg ~= nil thhen Cdmg = Cdmg + Lichdmg end
+		if hexTechdmg ~= nil then Cdmg = Cdmg + hexTechdmg end
+		if Blgdmg ~= nil then Cdmg = Cdmg + Blgdmg end
 	else
-		Cdmg = ((Wdmg + Edmg + Rdmg)*1.2) + idmg + Lichdmg + hexTechdmg + Blgdmg + dfgdmg
+		dmg = ((Wdmg + Edmg + Rdmg)*1.2)
+		if Lichdmg ~= nil thhen Cdmg = Cdmg + Lichdmg end
+		if dfgdmg ~= nil then Cdmg = Cdmg + dfgdmg end
+		if hexTechdmg ~= nil then Cdmg = Cdmg + hexTechdmg end
+		if Blgdmg ~= nil then Cdmg = Cdmg + Blgdmg end		
 	end
 	
 	if targ.health < Cdmg then
