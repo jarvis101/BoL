@@ -35,8 +35,6 @@ end
 require "SOW"
 require "VPrediction"
 
-
-
 local Wused = false
 --[[
 local ToInterrupt = {}
