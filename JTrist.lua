@@ -1,4 +1,4 @@
-local version = "1.22"
+local version = "1.23"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -362,20 +362,16 @@ function Combo()
         if Wrdy and (GetDistance(Target) < 900) then
 			if SafetyCheck(JTrist.CSettings.WSettings.safeWrange, Target) > JTrist.CSettings.WSettings.safeW then return
 			else
-				if VIP_USER then
-					local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
-					if HitChance == 2 or HitChance == 4 or HitChance == 5 then
-						if JTrist.CSettings.WSettings.vectoredW then
-							local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
-							CastPosition.x = CastPosition.x + (vectorX * 125)
-							CastPosition.z = CastPosition.z + (vectorZ * 125)
-							castW(CastPosition)
-						else
-							castW(CastPosition)
-						end
+				local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
+				if HitChance == 2 or HitChance == 4 or HitChance == 5 then
+					if JTrist.CSettings.WSettings.vectoredW then
+						local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
+						CastPosition.x = CastPosition.x + (vectorX * 125)
+						CastPosition.z = CastPosition.z + (vectorZ * 125)
+						castW(CastPosition)
+					else
+						castW(CastPosition)
 					end
-				else
-					castW(Target)
 				end
 			end
         end
@@ -398,20 +394,16 @@ function Harass()
         if Wrdy and (GetDistance(Target) < 900) then
 			if SafetyCheck(JTrist.HSettings.WSettings.safeWrange, Target) > JTrist.HSettings.WSettings.safeW then return
 			else
-				if VIP_USER then
-					local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
-					if HitChance == 2 or HitChance == 4 or HitChance == 5 then
-						if JTrist.HSettings.WSettings.vectoredW then
-							local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
-							CastPosition.x = CastPosition.x + (vectorX * 125)
-							CastPosition.z = CastPosition.z + (vectorZ * 125)
-							castW(CastPosition)
-						else
-							castW(CastPosition)
-						end
+				local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
+				if HitChance == 2 or HitChance == 4 or HitChance == 5 then
+					if JTrist.HSettings.WSettings.vectoredW then
+						local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
+						CastPosition.x = CastPosition.x + (vectorX * 125)
+						CastPosition.z = CastPosition.z + (vectorZ * 125)
+						castW(CastPosition)
+					else
+						castW(CastPosition)
 					end
-				else
-					castW(Target)
 				end
 			end
         end
@@ -425,19 +417,14 @@ end
 
 function IntPult()
 	if Wrdy and Rrdy and GetDistance(Target) < 750 and not Wused then
-		if VIP_USER then
-			local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
-			if HitChance == 2 or HitChance == 4 or HitChance == 5 then
-				local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
-				CastPosition.x = CastPosition.x + (vectorX * 125)
-				CastPosition.z = CastPosition.z + (vectorZ * 125)
-				Wused = true
-				intTarg = Target
-				castW(CastPosition)
-			end
-		else
+		local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
+		if HitChance == 2 or HitChance == 4 or HitChance == 5 then
+			local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
+			CastPosition.x = CastPosition.x + (vectorX * 125)
+			CastPosition.z = CastPosition.z + (vectorZ * 125)
 			Wused = true
-			castW(Target)
+			intTarg = Target
+			castW(CastPosition)
 		end
 	end
 end
