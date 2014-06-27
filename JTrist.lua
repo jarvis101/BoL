@@ -32,6 +32,8 @@ if autoupdateenabled then
 	AddTickCallback(update)
 end
 
+if myHero.charName ~= "Tristana" then return end
+
 require "SOW"
 require "VPrediction"
 
