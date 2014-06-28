@@ -1,9 +1,9 @@
-local version = "1.30"
+local version = "1.31"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
 local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/Jarvis101/BoL/master/JTrist.lua"
+local UPDATE_PATH = "/Jarvis101/BoL/master/JTrist.lua?rand="..math.random(1000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
@@ -426,6 +426,7 @@ function Harass()
 						else
 							castW(CastPosition)
 						end
+					end
 				else
 					if JTrist.SSettings.WSettings.vectoredW then
 						local targetPosition = Vector(Target.x, Target.y, Target.z)
