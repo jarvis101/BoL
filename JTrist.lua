@@ -447,7 +447,6 @@ end
 
 function CheckW(targ, vectored, forceR)
 	if not Wrdy then return nil, nil end
-	if 
 	local ttype = nil
 	local CastPosition = nil
 	local HitChance = nil
