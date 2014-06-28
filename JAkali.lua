@@ -568,7 +568,7 @@ function checkQ(targ)
 end
 
 function checkE(targ)
-	if GetDistance(targ, myHero) > 325 return false end
+	if GetDistance(targ, myHero) > 325 then return false end
 	if AkMen.SSettings.useEonlyifQ and TargetHaveBuff("AkaliMota", targ) then
 		useE(targ)
 	end
