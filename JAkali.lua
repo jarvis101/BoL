@@ -1,4 +1,4 @@
-local version = "2.02"
+local version = "2.03"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JAkali"
@@ -35,10 +35,12 @@ end
 if myHero.charName ~= "Akali" then return end
 
 require "SOW"
+require "VPrediction"
 
 function OnLoad()
+	VP = VPrediction()
 	SOWi = SOW(VP)
-	SOWi:RegisterAfterAttackCallback(AutoAttackReset)
+	SOWi:RegisterAfterAttackCallback(AutoAttackRese)
 
 	Menu()
 	init()
@@ -63,8 +65,6 @@ function Menu()
 	AkMen:addSubMenu("Harass Settings", "HSettings")
 	AkMen.HSettings:addParam("HuseQ","Use Q in Harass", SCRIPT_PARAM_ONOFF, true)
 	AkMen.HSettings:addParam("HuseE","Use E in Harass", SCRIPT_PARAM_ONOFF, true)
-	AkMen.HSettings:addParam("HuseAA","AutoAttack", SCRIPT_PARAM_ONOFF, false)
-	AkMen.HSettings:addParam("HmMove","Move to Mouse", SCRIPT_PARAM_ONOFF, true)
 	AkMen.HSettings:addParam("FuseQ","Use Q to farm", SCRIPT_PARAM_ONOFF, true)
 	AkMen.HSettings:addParam("FuseE","Use E to farm", SCRIPT_PARAM_ONOFF, true)
 	
@@ -75,8 +75,13 @@ function Menu()
 	AkMen.LCSettings:addParam("LCmMove","Move to Mouse", SCRIPT_PARAM_ONOFF, true)
 	
 	AkMen:addSubMenu("Skill Settings", "SSettings")
-	AkMen.CSettings:addParam("CQblock","Block Q use if target is marked", SCRIPT_PARAM_ONOFF, true)
-	AkMen.CSettings:addParam("CuseEonlyifQ","Only use E on Q marked targets", SCRIPT_PARAM_ONOFF, true)
+	AkMen.SSettings:addParam("CQblock","Block Q use if target is marked", SCRIPT_PARAM_ONOFF, true)
+	AkMen.SSettings:addParam("CuseEonlyifQ","Only use E on Q marked targets", SCRIPT_PARAM_ONOFF, true)
+	
+	AkMen:addSubMenu("Kill Steal", "KS")
+	AkMen.KS:addParam("Q","Use Q", SCRIPT_PARAM_ONOFF, true)
+	AkMen.KS:addParam("E","Use E", SCRIPT_PARAM_ONOFF, true)
+	AkMen.KS:addParam("R","Use R", SCRIPT_PARAM_ONOFF, true)
 	
 	AkMen:addParam("Combo","Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 	AkMen:addParam("Harass","Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
@@ -92,6 +97,7 @@ function Menu()
 	
 	AkMen:addSubMenu("Draw Settings", "DSettings")
 	AkMen.DSettings:addParam("drawQ", "Draw Q radius", SCRIPT_PARAM_ONOFF, true)
+	AkMen.DSettings:addParam("drawE", "Draw E radius", SCRIPT_PARAM_ONOFF, true)
 	AkMen.DSettings:addParam("drawR", "Draw R radius", SCRIPT_PARAM_ONOFF, true)
 	AkMen.DSettings:addParam("drawTar", "Draw red circle on target", SCRIPT_PARAM_ONOFF, true)
 	AkMen.DSettings:addParam("drawKill", "Draw Killable", SCRIPT_PARAM_ONOFF, true)
@@ -149,6 +155,9 @@ end
 function OnDraw()
 	if AkMen.DSettings.drawQ then
 		DrawCircle(myHero.x, myHero.y, myHero.z, 600, ARGB(214,1,33,0))
+	end
+	if AkMen.DSettings.drawE then
+		DrawCircle(myHero.x, myHero.y, myHero.z, 325, ARGB(214,1,33,0))
 	end
 	if AkMen.DSettings.drawR then
 		DrawCircle(myHero.x, myHero.y, myHero.z, 800, ARGB(214,1,33,0))
@@ -313,25 +322,28 @@ function Harass(targ)
 		end
 	end
 	if AkMen.HSettings.FuseE or AkMen.HSettings.FuseQ then
+		
 		local tar = nil
 		local minRange = 1000
 		local isEable = false
+		enemyMinions:update()
 		if AkMen.HSettings.FuseE then
 			enemyMinions.range = 320
 		end
 		if AkMen.HSettings.FuseQ then
-			enemyminions.range = 600
+			enemyMinions.range = 600
 		end
-		enemyMinions:update()
 		for i, minion in pairs(enemyMinions.objects) do
 			if minion ~= nil then
 				minRange = GetDistance(minion)
-				if minion.health < getDmg("E", minion, myHero) and minRange < 315 and minRange > 150 and AkMen.HSettings.useE then
+				if minion.health < getDmg("E", minion, myHero) and minRange < 315 and minRange > 175 and AkMen.HSettings.FuseE then
+					printc("should use E")
 					tar = minion
 					minionAtkVal = 2
 					isEable = true
 					break
-				elseif  minion.health < getDmg("Q", minion, myHero) and minRange < 600 and minRange > 315 and AkMen.HSettings.useQ and not isEable then
+				elseif  minion.health < getDmg("Q", minion, myHero) and minRange < 600 and minRange > 315 and AkMen.HSettings.FuseQ and not isEable then
+					printc("should use Q")
 					tar = minion
 					minionAtkVal = 3
 					break
@@ -355,8 +367,8 @@ function Harass(targ)
 	end
 end
 
-function Farm()
-	
+function printc(var)
+	if var~= nil then PrintChat("chat : "..var) end
 end
 
 function LaneClear()
