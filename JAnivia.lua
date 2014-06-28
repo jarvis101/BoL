@@ -1,4 +1,4 @@
-local version = "1.00"
+local version = "1.01"
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
@@ -387,11 +387,11 @@ function castR(targ)
 			CastSpell(_R)
 		end
 	end
-	if targ ~= nil and Qmiss == nil then
+	if targ ~= nil and Rmiss == nil then
 		if VIP_USER then
 			Packet('S_CAST', { spellId = _R, toX = targ.x, toY = targ.z , fromX = targ.x , fromY = targ.z }):send()		
 		else
-			CastSpell(_Q, targ.x, targ.z)
+			CastSpell(_R, targ.x, targ.z)
 		end
 	end
 end
