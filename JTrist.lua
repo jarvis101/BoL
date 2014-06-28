@@ -1,4 +1,4 @@
-local version = "1.39"
+local version = "1.40"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -255,7 +255,7 @@ function KS()
 	local rwkill = false
 	for i=1, heroManager.iCount, 1 do
 		local champ = heroManager:GetHero(i)
-		if champ.team ~= myHero.team then
+		if champ.team ~= myHero.team and ValidTarget(champ) then
 			if getDmg("W", champ, myHero) > champ.health and ValidTarget(champ) and GetDistance(champ, myHero) < 900 then
 				wkill = true
 				targ = champ
@@ -275,7 +275,7 @@ function KS()
 	end
 	if targ ~= nil then
 		if JTrist.KS.ksW and Wrdy and wkill then
-			local ttype, dest = CheckW(Target, false, false)
+			local ttype, dest = CheckW(targ, false, false)
 			if ttype == "vpred" and dest ~= nil then castW(dest) end
 			if ttype == "free" and dest ~= nil then castW(dest) end
 		end
@@ -283,7 +283,7 @@ function KS()
 			castR(targ)
 		end
 		if JTrist.KS.ksW and JTrist.KS.ksR and Wrdy and Rrdy and rwkill then
-			local ttype, dest = CheckW(Target, false, true)
+			local ttype, dest = CheckW(targ, false, true)
 			if ttype == "vpred" and dest ~= nil then castW(dest) end
 			if ttype == "free" and dest ~= nil then castW(dest) end
 		end
