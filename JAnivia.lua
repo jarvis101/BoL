@@ -1,4 +1,4 @@
-local version = "1.01"
+local version = "1.00"
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
@@ -6,7 +6,7 @@ local version = "1.01"
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JAnivia"
 local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/Jarvis101/BoL/master/JAnivia.lua"
+local UPDATE_PATH = "/Jarvis101/BoL/master/JAnivia.lua?rand="..math.random(1000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
@@ -40,10 +40,16 @@ if myHero.charName ~= "Anivia" then PrintChat("You're not playing Anivia, you're
 require "SOW"
 require "VPrediction"
 
-local EAratio
+local Qmiss = nil
+local Rmiss = nil
+local myQ = myHero:GetSpellData(_Q)
+local myW = myHero:GetSpellData(_W)
+local myE = myHero:GetSpellData(_E)
+local myR = myHero:GetSpellData(_R)
+local Target = nil
 
 function Menu()
-	JAnivia = scriptConfig("JTrist", "JTrist")
+	JAnivia = scriptConfig("JAnivia", "JAnivia")
 	
     JAnivia:addSubMenu("Combo", "CSettings")
     JAnivia.CSettings:addParam("useQ", "Use Q", SCRIPT_PARAM_ONOFF, true)
@@ -66,7 +72,17 @@ function Menu()
 	JAnivia.SSettings.FOF:addParam("afofr", "Enemy:Ally ratio(ally)", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
 	JAnivia.SSettings.FOF:addParam("fofd", "within # distance of me", SCRIPT_PARAM_SLICE, 1000, 400, 2000, 0)
 	JAnivia.SSettings.FOF:addParam("fofhp", "Minimum safe HP%", SCRIPT_PARAM_SLICE, 20, 5, 100, 0)
-	
+	JAnivia.SSettings:addSubMenu("Q Settings", "Qset")
+	JAnivia.SSettings.Qset:addParam("Qdet", "Detonate Q on 1st contact", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.SSettings.Qset:addParam("rand1", "if ^ is false, will detonate on target only", SCRIPT_PARAM_INFO, "")
+	JAnivia.SSettings:addSubMenu("E Settings", "Eset")	
+	JAnivia.SSettings.Eset:addParam("autoE", "Auto E closest enemy", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.SSettings.Eset:addParam("mana", "Minimum reserve mana%", SCRIPT_PARAM_SLICE, 20, 5, 100, 0)
+	JAnivia.SSettings.Eset:addParam("Echilled", "Only E chilled targets", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.SSettings:addSubMenu("R Settings", "Rset")	
+	JAnivia.SSettings.Rset:addParam("rdist", "Cancel R if enemy is further than", SCRIPT_PARAM_SLICE, 400, 210, 1000, 0)
+	JAnivia.SSettings.Rset:addParam("cancelR", "Use the option above", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.SSettings.Rset:addParam("keepR", "Keep R up during LaneClear", SCRIPT_PARAM_ONOFF, true)
 	JAnivia:addSubMenu("Item Settings", "ISettings")
     JAnivia.ISettings:addParam("IuseC", "Use items in combo", SCRIPT_PARAM_ONOFF, true)
 	JAnivia.ISettings:addSubMenu("Combo Items", "Citems")
@@ -114,9 +130,9 @@ function OnLoad()
 		ignite = nil
 	end
 	
-	ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1100, DAMAGE_PHYSICAL)	
-	ts.name = "Anivia"
-	JAnivia:addTS(ts)
+	niva = TargetSelector(TARGET_LESS_CAST_PRIORITY, 1200, DAMAGE_PHYSICAL, false)
+	niva.name = "Anivia"
+	JAnivia:addTS(niva)
 end
 
 function checkItems()
@@ -135,8 +151,8 @@ function OnDraw()
 end
 
 function OnTick()
-	ts:update()
-	Target = ts.target	
+	niva:update()
+	Target = niva.target
 	
 	Qrdy = (myHero:CanUseSpell(_Q) == READY)
 	Wrdy = (myHero:CanUseSpell(_W) == READY)
@@ -145,16 +161,26 @@ function OnTick()
 	Irdy = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
 	checkItems()
 	
+	if Qmiss ~=nil then
+		DetQ()
+	end
+	if Rmiss ~= nil and JAnivia.SSettings.Rset.cancelR then
+		if JAnivia.SSettings.Rset.keepR and not JAnivia.LaneClear then
+			if not ValidR() then castR(nil) end
+		end
+	end
 	KS()
-	
-	if JTrist.Combo and Target ~= nil then
+	if JAnivia.SSettings.Eset.autoE  then
+		autoE()
+	end
+	if JAnivia.Combo and Target ~= nil then
 		Combo()
 	end
-	if JTrist.Harass and Target ~= nil then
+	if JAnivia.Harass and Target ~= nil then
 		Harass()
 	end
-	if JTrist.Intercept and Target ~= nil then
-		IntPult()
+	if JAnivia.LaneClear and Target ~= nil then
+		LaneClear()
 	end
 end
 
@@ -166,21 +192,30 @@ function KS()
 			local Edmg = getDmg("E", champ, myHero)
 			local Rdmg = getDmg("R", champ, myHero)
 			local Idmg = getDmg("IGNITE", champ, myHero)
-			if JAnivia.KS.ksQ and GetDistance(champ, myHero) < 1100 and champ.health < Qdmg and ValidTarget(champ) then
-				if JAnivia.SSettings.Vpred then
-					CastPosition, HitChance, Position = VP:GetLineCastPosition(champ, 0.250, 150, 1100, 800)
-					if HitChance == 2 or HitChance == 4 or HitChance == 5 then
+			if JAnivia.KS.ksQ and champ.health < Qdmg and ValidTarget(champ) then
+				local qcheck, qtype = Qchecks(champ)
+				if qtype ~= nil then
+					if qtype == "vpred" then
+						castQ(qcheck)
+					end
+					if qtype == "free" then
 						castQ(champ)
 					end
-				else 
-					castQ(champ)
 				end
 			end
 			if JAnivia.KS.ksE and GetDistance(champ, myHero) < 650 and champ.health < Edmg and ValidTarget(champ) then
 				castE(champ)
 			end
-			if JAnivia.KS.ksR and GetDistance(champ, myHero) < 615 and champ.health < Rdmg and ValidTarget(champ) then
-				castR(champ)
+			if JAnivia.KS.ksR and GetDistance(champ, myHero) and champ.health < Rdmg and ValidTarget(champ) then
+				local rcheck, rtype = Rchecks(champ)
+				if rtype ~= nil then
+					if rtype == "vpred" then
+						castR(rcheck)
+					end
+					if rtype == "free" then
+						castR(champ)
+					end
+				end
 			end
 			if JAnivia.KS.ksI and GetDistance(champ, myHero) < 500 and champ.health < Idmg and ValidTarget(champ) then
 				CastSpell(ignite, champ)
@@ -206,18 +241,33 @@ function Combo()
 		end
 	end
 	if JAnivia.CSettings.useQ then
-		if GetDistance(Target, myHero) < 1100 then
-			if JAnivia.SSettings.Vpred then
-				CastPosition, HitChance, Position = VP:GetLineCastPosition(champ, 0.250, 150, 1100, 800)
-				if HitChance == 2 or HitChance == 4 or HitChance == 5 then
-					castQ(champ)
-				end
-			else 
-				castQ(champ)
+		local qcheck, qtype = Qchecks(Target)
+		if qtype ~= nil then
+			if qtype == "vpred" then
+				castQ(qcheck)
+			end
+			if qtype == "free" then
+				castQ(Target)
 			end
 		end
 	end
-		
+	if JAnivia.CSettings.useE then
+		local echeck = Echecks(Target)
+		if echeck == true then
+			castE(Target)
+		end
+	end
+	if JAnivia.CSettings.useR then
+		local rcheck, rtype = Rchecks(Target)
+		if rtype ~= nil then
+			if rtype == "vpred" then
+				castR(rcheck)
+			end
+			if rtype == "free" then
+				castR(Target)
+			end
+		end
+	end
 end
 
 function Harass()
@@ -248,4 +298,165 @@ function FoF()
 		return false
 	end
 	return fight
+end
+
+function OnProcessSpell(object, spell)
+	if spell.name == myQ.name then
+		Qmiss = object
+	end
+end
+
+function OnCreateObj(object)
+	if object.name == "cryo_FlashFrost_mis.troy" then
+		Qmiss = object
+	end
+	if object.name == "cryo_storm_green_team.troy" then
+		Rmiss = object
+	end
+end
+
+function OnDeleteObj(object)
+	if object.name == "cryo_FlashFrost_mis.troy" then
+		Qmiss = nil
+	end
+	if object.name == "cryo_storm_green_team.troy" then
+		Rmiss = nil
+	end
+end
+
+function ValidR()
+	local ccount = 0
+	for i=1, heroManager.iCount, 1 do
+		local champ = heroManager:GetHero(i)
+		if champ.team ~= myHero.team then
+			if GetDistance(champ, Rmiss) < JAnivia.SSettings.Rset.rdist then
+				ccount = ccount + 1
+			end
+		end
+	end
+	if ccount > 0 then return true else return false end	
+end
+
+function DetQ()
+	if JAnivia.SSettings.Qset.Qdet then
+		for i=1, heroManager.iCount, 1 do
+			local champ = heroManager:GetHero(i)
+			if champ.team ~= myHero.team then
+				if GetDistance(champ, Qmiss) < 150 then
+					castQ(nil)
+				end
+			end
+		end
+	else
+		if GetDistance(Target, Qmis) < 150 then
+			castQ(nil)
+		end
+	end
+end
+
+function castQ(targ)
+	if targ == nil and Qmiss ~= nil then
+		if VIP_USER then
+			Packet("S_CAST", {spellId = _Q}):send()
+		else
+			CastSpell(_Q)
+		end
+	end
+	if targ ~= nil and Qmiss == nil then
+		if VIP_USER then
+				Packet('S_CAST', { spellId = _Q, toX = targ.x, toY = targ.z , fromX = targ.x , fromY = targ.z }):send()		
+		else
+				CastSpell(_Q, targ.x, targ.z)
+		end
+	end
+end
+
+function castE(targ)
+	if VIP_USER then
+		Packet("S_CAST", {spellId = _E,targetNetworkId = targ.networkID}):send()
+	else
+		CastSpell(_E, targ)
+	end
+end
+
+function castR(targ)
+	if targ == nil and Rmiss ~= nil then
+		if VIP_USER then
+			Packet("S_CAST", {spellId = _R}):send()
+		else
+			CastSpell(_R)
+		end
+	end
+	if targ ~= nil and Qmiss == nil then
+		if VIP_USER then
+			Packet('S_CAST', { spellId = _R, toX = targ.x, toY = targ.z , fromX = targ.x , fromY = targ.z }):send()		
+		else
+			CastSpell(_Q, targ.x, targ.z)
+		end
+	end
+end
+
+function Qchecks(targ)
+	if targ == nil then return nil, nil end
+	local CastPosition = nil
+	local HitChance = nil
+	local Position = nil
+	local retval = nil
+	local rettype = nil
+	if Qmis ~= nil then return nil, nil end
+	if GetDistance(Target, myHero) < 1100 then
+		if JAnivia.SSettings.Vpred then
+			CastPosition, HitChance = VP:GetLineCastPosition(targ, 0.250, 150, 1100, 850)
+			if HitChance == 2 or HitChance == 4 or HitChance == 5 and GetDistance(CastPosition, myHero) < 1100 then
+				retval = CastPosition
+				rettype = "vpred"
+			end
+		end
+		if not JAnivia.SSettings.Vpred then
+			retval = "free"
+			rettype = "free"
+		end
+	end
+	return retval, rettype
+end
+
+function Wchecks()
+
+end
+
+function Echecks(targ)
+	if targ == nil then return false end
+	if GetDistance(targ, myHero) < 650 then
+		if JAnivia.SSettings.Eset.Echilled then
+			if TargetHaveBuff("chilled", targ) then return true end
+		else
+			return true
+		end
+	end
+	return false
+end
+
+function autoE()
+	for i=1, heroManager.iCount, 1 do
+		local champ = heroManager:GetHero(i)
+		if champ.team ~= myHero.team then
+			if Echecks(champ) == true then castE(champ) end
+		end
+	end
+end
+
+function Rchecks(targ)
+	if GetDistance(targ, myHero) < 650 then
+		if JAnivia.SSettings.Vpred then
+			CastPosition, HitChance = VP:GetCircleCastPosition(targ, 0.250, 210, 650, math.huge)
+			if HitChance == 2 or HitChance == 4 or HitChance == 5 and GetDistance(CastPosition, myHero) < 650 then
+				retval = CastPosition
+				rettype = "vpred"
+			end
+		end
+		if not JAnivia.SSettings.Vpred then 
+			retval = "free"
+			rettype = "free"
+		end
+	end			
 end
