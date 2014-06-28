@@ -487,7 +487,7 @@ end
 
 function castW(targ)
 	if VIP_USER then
-		Packet("S_CAST", {spellId = _W, toX = targ.x, toY = targ.z}):send()
+		Packet('S_CAST', { spellId = _W, toX = targ.x, toY = targ.z , fromX = targ.x , fromY = targ.z }):send()	
 	else
 		CastSpell(_W, targ.x, targ.z)
 	end
