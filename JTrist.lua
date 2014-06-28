@@ -427,6 +427,7 @@ function castE(targ)
 end
 
 function castR(targ)
+	if not Rrdy then return end
 	if VIP_USER then
 		Packet("S_CAST", {spellId = _R, targetNetworkId = targ.networkID}):send()
 	else
