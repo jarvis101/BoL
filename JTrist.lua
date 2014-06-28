@@ -1,4 +1,4 @@
-local version = "1.34"
+local version = "1.35"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -38,6 +38,7 @@ require "SOW"
 require "VPrediction"
 
 local Wused = false
+local Wrange = 900
 
 local ToInterrupt = {}
 
@@ -105,10 +106,11 @@ function Menu()
 	JTrist:addSubMenu("Skill Settings", "SSettings")
 	JTrist.SSettings:addSubMenu("W Settings", "WSettings")
 	JTrist.SSettings.WSettings:addParam("Vpred", "Use Vprediction for W", SCRIPT_PARAM_ONOFF, true)
+	JTrist.SSettings.WSettings:addParam("Prod", "(not working)", SCRIPT_PARAM_ONOFF, true)
 	JTrist.SSettings.WSettings:addParam("Ak", "Don't use W if more than #", SCRIPT_PARAM_INFO, "")
 	JTrist.SSettings.WSettings:addParam("safeW", "enemies around", SCRIPT_PARAM_SLICE, 4, 1, 4, 0)
 	JTrist.SSettings.WSettings:addParam("safeWrange", "Safety Distance", SCRIPT_PARAM_SLICE, 1000, 500 , 2000, 0)
-	JTrist.SSettings.WSettings:addParam("vectoredW", "Try to jump in front of the target", SCRIPT_PARAM_ONOFF, true)
+	JTrist.SSettings.WSettings:addParam("vectoredW", "Try to jump in front of the target", SCRIPT_PARAM_ONOFF, false)
 	
     JTrist:addSubMenu("Interrupt Opts", "IntOpt")
     JTrist.IntOpt:addParam("IntOpt", "Interrupt channels and dangerous spells", SCRIPT_PARAM_ONOFF, true)
@@ -272,36 +274,19 @@ function KS()
 	end
 	if targ ~= nil then
 		if JTrist.KS.ksW and Wrdy and wkill then
-			if VIP_USER then
-				if JTrist.SSettings.Vpred then
-					local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
-					if HitChance == 2 or HitChance == 4 or HitChance == 5 then
-						castW(CastPosition)
-					end
-				else
-					castW(Target)
-				end
-			else
-				Wused = true
-				castW(targ)
-			end
+			local ttype, dest = CheckW(Target, false, false)
+			if ttype == "vpred" and dest ~= nil then castW(dest) end
+			if ttype == "free" and dest ~= nil then castW(dest) end
 		end
 		if JTrist.KS.ksR and Rrdy and rkill then
 			castR(targ)
 		end
 		if JTrist.KS.ksW and JTrist.KS.ksR and Wrdy and Rrdy and rwkill then
-			if VIP_USER then
-				local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
-				if HitChance == 2 or HitChance == 4 or HitChance == 5 then
-					Wused = true
-					castW(CastPosition)
-				end
-			else
-				Wused = true
-				castW(targ)
-			end
+			local ttype, dest = CheckW(Target, false, true)
+			if ttype == "vpred" and dest ~= nil then castW(dest) end
+			if ttype == "free" and dest ~= nil then castW(dest) end
 		end
-		if JTrist.ksIgnite.useI and targ.health < getDmg("IGNITE", targ, myHero) and GetDistance(targ, myHero) < 500 then
+		if JTrist.KS.useI and targ.health < getDmg("IGNITE", targ, myHero) and GetDistance(targ, myHero) < 500 then
 			CastSpell(ignite, targ)
 		end
 	end
@@ -337,33 +322,9 @@ function Combo()
         end
     end
     if JTrist.CSettings.useW then
-        if Wrdy and (GetDistance(Target) < 900) then
-			if JTrist.SSettings.WSettings.safeW < 4 and SafetyCheck(JTrist.SSettings.WSettings.safeWrange, Target) > JTrist.SSettings.WSettings.safeW then return
-			else
-				if JTrist.SSettings.Vpred then
-					local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
-					if HitChance == 2 or HitChance == 4 or HitChance == 5 then
-						if JTrist.SSettings.WSettings.vectoredW then
-							local targetPosition = Vector(CastPosition.x, CastPosition.y, CastPosition.z)
-							local myPosition = Vector(myHero.x, myHero.y, myHero.z)		
-							local Destination = targetPosition + (targetPosition - myPosition)*((150/myHero:GetDistance(CastPosition)))
-							castW(Destination)
-						else
-							castW(CastPosition)
-						end
-					end
-				else
-					if JTrist.SSettings.WSettings.vectoredW then
-						local targetPosition = Vector(Target.x, Target.y, Target.z)
-						local myPosition = Vector(myHero.x, myHero.y, myHero.z)		
-						local Destination = targetPosition + (targetPosition - myPosition)*((150/myHero:GetDistance(Target)))
-						castW(Destination)
-					else
-						castW(Target)
-					end
-				end
-			end
-        end
+        local ttype, dest = CheckW(Target, JTrist.SSettings.WSettings.vectoredW, false)
+		if ttype == "vpred" and dest ~= nil then castW(dest) end
+		if ttype == "free" and dest ~= nil then castW(dest) end
     end
     if JTrist.CSettings.useE then
         if Erdy and (GetDistance(Target) < getTrange()) then
@@ -413,33 +374,9 @@ function Harass()
 		end
 	end
 	if JTrist.HSettings.useW then
-        if Wrdy and (GetDistance(Target) < 900) then
-			if JTrist.SSettings.WSettings.safeW < 4 and SafetyCheck(JTrist.SSettings.WSettings.safeWrange, Target) > JTrist.SSettings.WSettings.safeW then return
-			else
-				if JTrist.SSettings.Vpred then
-					local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
-					if HitChance == 2 or HitChance == 4 or HitChance == 5 then
-						if JTrist.SSettings.WSettings.vectoredW then
-							local targetPosition = Vector(CastPosition.x, CastPosition.y, CastPosition.z)
-							local myPosition = Vector(myHero.x, myHero.y, myHero.z)		
-							local Destination = targetPosition + (targetPosition - myPosition)*((150/myHero:GetDistance(CastPosition)))
-							castW(Destination)
-						else
-							castW(CastPosition)
-						end
-					end
-				else
-					if JTrist.SSettings.WSettings.vectoredW then
-						local targetPosition = Vector(Target.x, Target.y, Target.z)
-						local myPosition = Vector(myHero.x, myHero.y, myHero.z)		
-						local Destination = targetPosition + (targetPosition - myPosition)*((150/myHero:GetDistance(Target)))
-						castW(Destination)
-					else
-						castW(Target)
-					end
-				end
-			end
-        end
+		local ttype, dest = CheckW(Target, JTrist.SSettings.WSettings.vectoredW, false)
+		if ttype == "vpred" and dest ~= nil then castW(dest) end
+		if ttype == "free" and dest ~= nil then castW(dest) end
     end
 	if JTrist.HSettings.useE then
 		if Erdy and GetDistance(Target, myHero) < getTrange() then
@@ -449,24 +386,10 @@ function Harass()
 end
 
 function IntPult()
-	if Wrdy and Rrdy and GetDistance(Target) < 750 and not Wused then
-		local CastPosition, HitChance, Position = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
-		if JTrist.SSettings.Vpred then
-			if HitChance == 2 or HitChance == 4 or HitChance == 5 then
-				local targetPosition = Vector(CastPosition.x, CastPosition.y, CastPosition.z)
-				local myPosition = Vector(myHero.x, myHero.y, myHero.z)		
-				local Destination = targetPosition + (targetPosition - myPosition)*((150/myHero:GetDistance(CastPosition)))
-				castW(Destination)
-				Wused = true
-				intTarg = Target
-				castW(CastPosition)
-			end
-		else
-			local targetPosition = Vector(Target.x, Target.y, Target.z)
-			local myPosition = Vector(myHero.x, myHero.y, myHero.z)		
-			local Destination = targetPosition + (targetPosition - myPosition)*((150/myHero:GetDistance(Target)))
-			castW(Destination)
-		end
+	if Wrdy and Rrdy and not Wused then
+		local ttype, dest = CheckW(Target, true, true)
+		if ttype == "vpred" and dest ~= nil then castW(dest) end
+		if ttype == "free" and dest ~= nil then castW(dest) end
 	end
 end
 
@@ -520,6 +443,58 @@ function SafetyCheck(range, targ)
 		end
     end
     return danger
+end
+
+function CheckW(targ, vectored, forceR)
+	if not Wrdy then return nil, nil end
+	if 
+	local ttype = nil
+	local CastPosition = nil
+	local HitChance = nil
+	if JTrist.SSettings.WSettings.Vpred then
+		ttype == "vpred"
+		CastPosition, HitChance = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
+		if HitChance == 2 or HitChance == 4 or HitChance == 5 then
+			if vectored then
+				local targetPosition = Vector(CastPosition.x, CastPosition.y, CastPosition.z)
+				local myPosition = Vector(myHero.x, myHero.y, myHero.z)		
+				local Destination = targetPosition + (targetPosition - myPosition)*((150/myHero:GetDistance(CastPosition)))
+				if GetDistance(Destination, myHero) < Wrange then 
+					if forceR then Wused = true end
+					return ttype, Destination 
+				else 
+					return nil, nil 
+				end
+			else
+				if GetDistance(CastPosition, myHero) < Wrange then 
+					if forceR then Wused = true end
+					return ttype, CastPosition 
+				else 
+					return nil, nil 
+				end
+			end
+		end
+	if not JTrist.SSettings.WSettings.Vpred and not JTrist.SSettings.Prod then
+		if vectored then
+			local targetPosition = Vector(targ.x, targ.y, targ.z)
+			local myPosition = Vector(myHero.x, myHero.y, myHero.z)		
+			local Destination = targetPosition + (targetPosition - myPosition)*((150/myHero:GetDistance(CastPosition)))
+			ttype = "free"
+			if GetDistance(Destination, myHero) < Wrange then
+				if forceR then Wused = true end
+				return ttype, Destination 
+			else 
+				return nil, nil 
+			end
+		else
+			if GetDistance(targ, myHero) < Wrange then 
+				if forceR then Wused = true end
+				return "free", targ 
+			else 
+				return nil, nil
+			end
+		end
+	end			
 end
 
 function analyzeCombat(targ)
