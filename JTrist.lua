@@ -1,4 +1,4 @@
-local version = "1.38"
+local version = "1.39"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -287,8 +287,10 @@ function KS()
 			if ttype == "vpred" and dest ~= nil then castW(dest) end
 			if ttype == "free" and dest ~= nil then castW(dest) end
 		end
-		if JTrist.KS.useI and targ.health < getDmg("IGNITE", targ, myHero) and GetDistance(targ, myHero) < 500 and Irdy then
-			CastSpell(ignite, targ)
+		if ignite ~= nil then
+			if JTrist.KS.useI and targ.health < getDmg("IGNITE", targ, myHero) and GetDistance(targ, myHero) < 500 and Irdy then
+				CastSpell(ignite, targ)
+			end
 		end
 	end
 end
@@ -347,8 +349,10 @@ function Combo()
 			end
         end
     end
-	if JTrist.CSettings.useI and Irdy and GetDistance(Target, myHero) < 500 then
-		CastSpell(ignite, Target)
+	if ignite ~= nil then
+		if JTrist.CSettings.useI and Irdy and GetDistance(Target, myHero) < 500 then
+			CastSpell(ignite, Target)
+		end
 	end
 end
 
@@ -433,7 +437,6 @@ function castE(targ)
 end
 
 function castR(targ)
-	if not Rrdy then return end
 	if VIP_USER then
 		Packet("S_CAST", {spellId = _R, targetNetworkId = targ.networkID}):send()
 	else
