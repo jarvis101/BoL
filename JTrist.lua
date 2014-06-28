@@ -451,7 +451,7 @@ function CheckW(targ, vectored, forceR)
 	local CastPosition = nil
 	local HitChance = nil
 	if JTrist.SSettings.WSettings.Vpred then
-		ttype == "vpred"
+		ttype = "vpred"
 		CastPosition, HitChance = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
 		if HitChance == 2 or HitChance == 4 or HitChance == 5 then
 			if vectored then
@@ -473,6 +473,7 @@ function CheckW(targ, vectored, forceR)
 				end
 			end
 		end
+	end
 	if not JTrist.SSettings.WSettings.Vpred and not JTrist.SSettings.Prod then
 		if vectored then
 			local targetPosition = Vector(targ.x, targ.y, targ.z)
