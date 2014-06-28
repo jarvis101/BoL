@@ -1,4 +1,4 @@
-local version = "1.31"
+local version = "1.33"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -104,7 +104,7 @@ function Menu()
 	
 	JTrist:addSubMenu("Skill Settings", "SSettings")
 	JTrist.SSettings.WSettings:addParam("Vpred", "Use Vprediction for W", SCRIPT_PARAM_ONOFF, true)
-	JTrist.SSettings:addSubMenu("W Settings", "WSettings")
+	JTrist.SSettings:addSubMenu("WSettings", "WSettings")
 	JTrist.SSettings.WSettings:addParam("Ak", "Don't use W if more than #", SCRIPT_PARAM_INFO, "")
 	JTrist.SSettings.WSettings:addParam("safeW", "enemies around", SCRIPT_PARAM_SLICE, 4, 1, 4, 0)
 	JTrist.SSettings.WSettings:addParam("safeWrange", "Safety Distance", SCRIPT_PARAM_SLICE, 1000, 500 , 2000, 0)
