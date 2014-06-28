@@ -337,13 +337,11 @@ function Harass(targ)
 			if minion ~= nil then
 				minRange = GetDistance(minion)
 				if minion.health < getDmg("E", minion, myHero) and minRange < 315 and minRange > 175 and AkMen.HSettings.FuseE then
-					printc("should use E")
 					tar = minion
 					minionAtkVal = 2
 					isEable = true
 					break
 				elseif  minion.health < getDmg("Q", minion, myHero) and minRange < 600 and minRange > 315 and AkMen.HSettings.FuseQ and not isEable then
-					printc("should use Q")
 					tar = minion
 					minionAtkVal = 3
 					break
@@ -367,9 +365,6 @@ function Harass(targ)
 	end
 end
 
-function printc(var)
-	if var~= nil then PrintChat("chat : "..var) end
-end
 
 function LaneClear()
 	local mosthp = 0
