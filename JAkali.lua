@@ -34,7 +34,12 @@ end
 
 if myHero.charName ~= "Akali" then return end
 
+require "SOW"
+
 function OnLoad()
+	SOWi = SOW(VP)
+	SOWi:RegisterAfterAttackCallback(AutoAttackReset)
+
 	Menu()
 	init()
 	PrintChat("<font color='#aaff34'>JAkali</font>")
