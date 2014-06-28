@@ -1,4 +1,4 @@
-local version = "1.29"
+local version = "1.30"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
