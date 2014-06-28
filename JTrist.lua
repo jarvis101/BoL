@@ -1,4 +1,4 @@
-local version = "1.28"
+local version = "1.29"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -191,11 +191,6 @@ function checkItems()
 	BotRKR = (BotRK ~= nil and myHero:CanUseSpell(BotRK) == READY)
 	SotD = GetInventorySlotItem(3131)
 	SotDR = (SotD ~= nil and myHero:CanUseSpell(YGB) == READY)
-end
-
-function useItems()
-	
-	
 end
 
 function getAAdmg(targ)
@@ -492,7 +487,7 @@ end
 
 function castW(targ)
 	if VIP_USER then
-		Packet("S_CAST", {spellId = _W, targ.x, targ.z}):send()
+		Packet("S_CAST", {spellId = _W, toX = targ.x, toY = targ.z}):send()
 	else
 		CastSpell(_W, targ.x, targ.z)
 	end
