@@ -1,4 +1,4 @@
-local version = "1.36"
+local version = "1.37"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -39,6 +39,7 @@ require "VPrediction"
 
 local Wused = false
 local Wrange = 900
+local Wdelay = 0
 
 local ToInterrupt = {}
 
@@ -111,6 +112,7 @@ function Menu()
 	JTrist.SSettings.WSettings:addParam("safeW", "enemies around", SCRIPT_PARAM_SLICE, 4, 1, 4, 0)
 	JTrist.SSettings.WSettings:addParam("safeWrange", "Safety Distance", SCRIPT_PARAM_SLICE, 1000, 500 , 2000, 0)
 	JTrist.SSettings.WSettings:addParam("vectoredW", "Try to jump in front of the target", SCRIPT_PARAM_ONOFF, false)
+	JTrist.SSettings.WSettings:addParam("Wdelay", "Give W 1s internal CD", SCRIPT_PARAM_ONOFF, true)
 	
     JTrist:addSubMenu("Interrupt Opts", "IntOpt")
     JTrist.IntOpt:addParam("IntOpt", "Interrupt channels and dangerous spells", SCRIPT_PARAM_ONOFF, true)
@@ -235,7 +237,6 @@ function OnTick()
 	checkItems()
 	
 	KS()
-	
 	if JTrist.Combo and Target ~= nil then
 		Combo()
 	end
@@ -286,7 +287,7 @@ function KS()
 			if ttype == "vpred" and dest ~= nil then castW(dest) end
 			if ttype == "free" and dest ~= nil then castW(dest) end
 		end
-		if JTrist.KS.useI and targ.health < getDmg("IGNITE", targ, myHero) and GetDistance(targ, myHero) < 500 then
+		if JTrist.KS.useI and targ.health < getDmg("IGNITE", targ, myHero) and GetDistance(targ, myHero) < 500 and Irdy then
 			CastSpell(ignite, targ)
 		end
 	end
@@ -330,7 +331,8 @@ function Combo()
         if Erdy and (GetDistance(Target) < getTrange()) then
 			if JTrist.ISettings.Citems.DFGwait and not DFGR then
 				castE(Target)
-			else
+			end
+			if not JTrist.ISettings.Citems.DFGwait then
 				castE(Target)
 			end
         end
@@ -339,12 +341,13 @@ function Combo()
         if Rrdy and (GetDistance(Target) < getTrange()) then
             if JTrist.ISettings.Citems.DFGwait and not DFGR then
 				castR(Target)
-			else
+			end
+			if not JTrist.ISettings.Citems.DFGwait then
 				castR(Target)
 			end
         end
     end
-	if JTrist.CSettings.useI then
+	if JTrist.CSettings.useI and Irdy and GetDistance(Target, myHero) < 500 then
 		CastSpell(ignite, Target)
 	end
 end
@@ -400,6 +403,9 @@ function OnCreateObj(object)
 			castR(intTarg)
 		end
 	end
+	if object.name == "tristana_rocketJump_cas.troy" then
+		Wdelay = os.clock()
+	end
 end
 
 function castQ()
@@ -448,6 +454,7 @@ end
 
 function CheckW(targ, vectored, forceR)
 	if not Wrdy then return nil, nil end
+	--if JTrist.SSettings.WSettings.Wdelay and ((Wdelay + 1) > os.clock()) then return nil, nil end
 	local ttype = nil
 	local CastPosition = nil
 	local HitChance = nil
