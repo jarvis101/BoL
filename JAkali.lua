@@ -1,4 +1,4 @@
-local version = "2.01"
+local version = "2.02"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JAkali"
@@ -32,14 +32,9 @@ if autoupdateenabled then
 	AddTickCallback(update)
 end
 
-require "SOW"
-
 if myHero.charName ~= "Akali" then return end
 
 function OnLoad()
-	SOWi = SOW()
-	SOWi:RegisterAfterAttackCallback(AutoAttackReset)
-
 	Menu()
 	init()
 	PrintChat("<font color='#aaff34'>JAkali</font>")
@@ -59,7 +54,6 @@ function Menu()
 	AkMen.CSettings:addParam("CuseRchase","only use R to chase", SCRIPT_PARAM_ONOFF, true)
 	AkMen.CSettings:addParam("CuseRchaseHP","if enemy is below % HP", SCRIPT_PARAM_SLICE, 50, 0, 100, 0)
 	AkMen.CSettings:addParam("CuseRchaseDistance","Minimum Distance to chase", SCRIPT_PARAM_SLICE, 350, 0, 800, 0)
-	AkMen.CSettings:addParam("CprioritizeBuffAA","Prioritize AA if lich/sheen", SCRIPT_PARAM_ONOFF, true)
 	
 	AkMen:addSubMenu("Harass Settings", "HSettings")
 	AkMen.HSettings:addParam("HuseQ","Use Q in Harass", SCRIPT_PARAM_ONOFF, true)
@@ -174,7 +168,6 @@ function OnTick()
 	Erdy = (myHero:CanUseSpell(_E) == READY)
 	Rrdy = (myHero:CanUseSpell(_R) == READY)
 	Irdy = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
-	AArdy = CanAtk()
 	ts:update()
 	enemyMinions:update()
 	checkItems() --thanks fuggi--
@@ -280,9 +273,6 @@ function Combo(targ)
 		end
 		if AkMen.CSettings.CuseIgnite and Irdy and GetDistance(targ) < 600 and targ.health <= (50 + (20 * myHero.level))then
 			CastSpell(ignite, targ)
-		end
-		if AkMen.CSettings.CuseAA and AkMen.CSettings.CprioritizeBuffAA and haveBuff then
-			useAA(targ)
 		end
 		if AkMen.CSettings.CuseQ and Qrdy then
 			checkQ(targ)
@@ -436,13 +426,6 @@ function useW(targ)
 	end
 end
 
-function useAA(targ)
-	if CanAtk() and GetDistance(targ, myHero) < 200 then
-		lastAttack = os.clock()
-		myHero:Attack(targ)
-	end
-end
-
 function useDFG(targ)
 	if AkMen.ISettings.smartdfg then
 		local Qdmg = getDmg("Q", targ, myHero, 3)
@@ -557,10 +540,12 @@ function checkQ(targ)
 	if targ ~= nil then
 		if GetDistance(targ, myHero) < 600 then
 			if not TargetHaveBuff("AkaliMota", targ) and AkMen.SSettings.Qblock then
-				useQ(targ)	
-			else if TargetHaveBuff("AkaliMota", targ) and targ.health < getDmg("Q", targ, myHero) and AkMen.SSettings.Qblock then
 				useQ(targ)
-			else if not AkMen.SSettings.Qblock then
+			end
+			if TargetHaveBuff("AkaliMota", targ) and targ.health < getDmg("Q", targ, myHero) and AkMen.SSettings.Qblock then
+				useQ(targ)
+			end
+			if not AkMen.SSettings.Qblock then
 				useQ(targ)
 			end
 		end
