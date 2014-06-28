@@ -1,4 +1,4 @@
-local version = "2.00"
+local version = "2.01"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JAkali"
@@ -32,9 +32,14 @@ if autoupdateenabled then
 	AddTickCallback(update)
 end
 
+require "SOW"
+
 if myHero.charName ~= "Akali" then return end
 
 function OnLoad()
+	SOWi = SOW()
+	SOWi:RegisterAfterAttackCallback(AutoAttackReset)
+
 	Menu()
 	init()
 	PrintChat("<font color='#aaff34'>JAkali</font>")
