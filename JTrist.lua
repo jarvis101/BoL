@@ -351,6 +351,7 @@ function Combo()
 						else
 							castW(CastPosition)
 						end
+					end
 				else
 					if JTrist.SSettings.WSettings.vectoredW then
 						local targetPosition = Vector(Target.x, Target.y, Target.z)
