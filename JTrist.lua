@@ -1,4 +1,4 @@
-local version = "1.42"
+local version = "1.43"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -255,7 +255,7 @@ function KS()
 	local rwkill = false
 	for i=1, heroManager.iCount, 1 do
 		local champ = heroManager:GetHero(i)
-		if champ.team ~= myHero.team and ValidTarget(champ) then
+		if champ.team ~= myHero.team and ValidTarget(champ) and GetDistance(champ,myHero) < 1500 then
 			if getDmg("W", champ, myHero) > champ.health and ValidTarget(champ) and GetDistance(champ, myHero) < 900 then
 				wkill = true
 				targ = champ
