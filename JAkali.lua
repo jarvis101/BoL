@@ -1,4 +1,4 @@
-local version = "2.05"
+local version = "2.06"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JAkali"
@@ -59,7 +59,7 @@ function Menu()
 	AkMen.CSettings:addParam("CuseE","Use E in Combo", SCRIPT_PARAM_ONOFF, true)
 	AkMen.CSettings:addParam("CuseR","Use R in Combo", SCRIPT_PARAM_ONOFF, true)
 	AkMen.CSettings:addParam("CuseRchase","only use R to chase", SCRIPT_PARAM_ONOFF, true)
-	AkMen.CSettings:addParam("CuseRchaseHP","if enemy is below % HP", SCRIPT_PARAM_SLICE, 50, 0, 100, 0)
+	AkMen.CSettings:addParam("CuseRchaseHP","if enemy is below % HP", SCRIPT_PARAM_SLICE, 50, 0, 101, 0)
 	AkMen.CSettings:addParam("CuseRchaseDistance","Minimum Distance to chase", SCRIPT_PARAM_SLICE, 350, 0, 800, 0)
 	
 	AkMen:addSubMenu("Harass Settings", "HSettings")
