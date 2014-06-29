@@ -1,4 +1,4 @@
-local version = "1.43"
+local version = "1.44"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -113,7 +113,7 @@ function Menu()
 	JTrist.SSettings.WSettings:addParam("safeWrange", "Safety Distance", SCRIPT_PARAM_SLICE, 1000, 500 , 2000, 0)
 	JTrist.SSettings.WSettings:addParam("vectoredW", "Try to jump in front of the target", SCRIPT_PARAM_ONOFF, false)
 	JTrist.SSettings.WSettings:addParam("Wdelay", "Give W 1s internal CD", SCRIPT_PARAM_ONOFF, true)
-	
+	JTrist.SSettings.WSettings:addParam("Wdval", "Delay for W cd", SCRIPT_PARAM_SLICE, 1.0, 0 , 2.5, 1)
     JTrist:addSubMenu("Interrupt Opts", "IntOpt")
     JTrist.IntOpt:addParam("IntOpt", "Interrupt channels and dangerous spells", SCRIPT_PARAM_ONOFF, true)
 
@@ -404,7 +404,7 @@ function OnCreateObj(object)
 	if object.name == "tristana_rocketJump_land.troy" then
 		if Wused == true then
 			Wused = false
-			castR(intTarg)
+			castR(Target)
 		end
 	end
 	if object.name == "tristana_rocketJump_cas.troy" then
@@ -457,7 +457,7 @@ end
 
 function CheckW(targ, vectored, forceR)
 	if not Wrdy then return nil, nil end
-	--if JTrist.SSettings.WSettings.Wdelay and ((Wdelay + 1) > os.clock()) then return nil, nil end
+	if JTrist.SSettings.WSettings.Wdelay and ((Wdelay + JTrist.SSettings.WSettings.Wdval) > os.clock()) then return nil, nil end
 	local ttype = nil
 	local CastPosition = nil
 	local HitChance = nil
