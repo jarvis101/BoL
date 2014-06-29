@@ -1,4 +1,4 @@
-local version = "1.01"
+local version = "1.10"
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
 --THIS IS A WORK IN PROGRESS
@@ -67,22 +67,32 @@ function Menu()
 	JAnivia:addSubMenu("Skill Settings", "SSettings")
 	JAnivia.SSettings:addParam("Vpred", "Use VPrediction", SCRIPT_PARAM_ONOFF, true)
     JAnivia.SSettings:addParam("Eblk", "Only use E on frozen targets", SCRIPT_PARAM_ONOFF, true)
+	
 	JAnivia.SSettings:addSubMenu("Fight or flight", "FOF")
 	JAnivia.SSettings.FOF:addParam("efofr", "Enemy:Ally ratio(enemy)", SCRIPT_PARAM_SLICE, 5, 1, 5, 0)
 	JAnivia.SSettings.FOF:addParam("afofr", "Enemy:Ally ratio(ally)", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
 	JAnivia.SSettings.FOF:addParam("fofd", "within # distance of me", SCRIPT_PARAM_SLICE, 1000, 400, 2000, 0)
 	JAnivia.SSettings.FOF:addParam("fofhp", "Minimum safe HP%", SCRIPT_PARAM_SLICE, 20, 5, 100, 0)
+	
 	JAnivia.SSettings:addSubMenu("Q Settings", "Qset")
 	JAnivia.SSettings.Qset:addParam("Qdet", "Detonate Q on 1st contact", SCRIPT_PARAM_ONOFF, true)
 	JAnivia.SSettings.Qset:addParam("rand1", "if ^ is false, will detonate on target only", SCRIPT_PARAM_INFO, "")
+	
+	JAnivia.SSettings:addSubMenu("W Settings", "Wset")
+	JAnivia.SSettings.Wset:addParam("fightW", "use wall in a fight", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.SSettings.Wset:addParam("flightW", "use wall in flight", SCRIPT_PARAM_ONOFF, true)
+	JAnivia.SSettings.Wset:addParam("autoW", "auto-wall", SCRIPT_PARAM_ONOFF, false)
+	
 	JAnivia.SSettings:addSubMenu("E Settings", "Eset")	
 	JAnivia.SSettings.Eset:addParam("autoE", "Auto E closest enemy", SCRIPT_PARAM_ONOFF, true)
 	JAnivia.SSettings.Eset:addParam("mana", "Minimum reserve mana%", SCRIPT_PARAM_SLICE, 20, 5, 100, 0)
 	JAnivia.SSettings.Eset:addParam("Echilled", "Only E chilled targets", SCRIPT_PARAM_ONOFF, true)
+	
 	JAnivia.SSettings:addSubMenu("R Settings", "Rset")	
-	JAnivia.SSettings.Rset:addParam("rdist", "Cancel R if enemy is further than", SCRIPT_PARAM_SLICE, 400, 210, 1000, 0)
+	JAnivia.SSettings.Rset:addParam("rdist", "Cancel R if enemy is further than", SCRIPT_PARAM_SLICE, 600, 400, 2000, 0)
 	JAnivia.SSettings.Rset:addParam("cancelR", "Use the option above", SCRIPT_PARAM_ONOFF, true)
 	JAnivia.SSettings.Rset:addParam("keepR", "Keep R up during LaneClear", SCRIPT_PARAM_ONOFF, true)
+	
 	JAnivia:addSubMenu("Item Settings", "ISettings")
     JAnivia.ISettings:addParam("IuseC", "Use items in combo", SCRIPT_PARAM_ONOFF, true)
 	JAnivia.ISettings:addSubMenu("Combo Items", "Citems")
@@ -170,6 +180,9 @@ function OnTick()
 		end
 	end
 	KS()
+	if JAnivia.SSettings.Wset.autoW then
+		autoW()
+	end
 	if JAnivia.SSettings.Eset.autoE  then
 		autoE()
 	end
@@ -182,12 +195,13 @@ function OnTick()
 	if JAnivia.LaneClear and Target ~= nil then
 		LaneClear()
 	end
+	if JAnivia.Debug then Debug() end
 end
 
 function KS()
 	for i=1, heroManager.iCount, 1 do
 		local champ = heroManager:GetHero(i)
-		if champ.team ~= myHero.team then
+		if champ.team ~= myHero.team and ValidTarget(champ) and GetDistance(champ, myHero) < 1500 then
 			local Qdmg = getDmg("Q", champ, myHero)
 			local Edmg = getDmg("E", champ, myHero)
 			local Rdmg = getDmg("R", champ, myHero)
@@ -224,6 +238,21 @@ function KS()
 	end
 end
 
+function autoW()
+	local closest = 999999
+	local targ = nil
+	for i=1, heroManager.iCount, 1 do
+		local champ = heroManager:GetHero(i)
+		if champ.team ~= myHero.team and ValidTarget(champ) then
+			if GetDistance(champ, myHero) < closest then 
+				closest = GetDistance(champ, myHero) 
+				targ = champ
+			end
+		end
+	end
+	if targ ~= nil then if Wchecks(targ) ~= nil then castW(targ) end end
+end
+
 function Combo()
 	--WIP
 	if JAnivia.ISettings.IuseC then
@@ -240,7 +269,7 @@ function Combo()
 			CastSpell(BilgeWaterCutlass)
 		end
 	end
-	if JAnivia.CSettings.useQ then
+	if JAnivia.CSettings.useQ and Qrdy then
 		local qcheck, qtype = Qchecks(Target)
 		if qtype ~= nil then
 			if qtype == "vpred" then
@@ -251,14 +280,20 @@ function Combo()
 			end
 		end
 	end
-	if JAnivia.CSettings.useE then
+	if JAnivia.CSettings.useE and Erdy then
 		local echeck = Echecks(Target)
 		if echeck == true then
 			castE(Target)
 		end
 	end
-	if JAnivia.CSettings.useR then
-		local rcheck, rtype = Rchecks(Target)
+	if JAnivia.CSettings.useW and Wrdy then
+		local wcheck = Wchecks(Target)
+		if wcheck ~= nil then
+			castW(wcheck)
+		end
+	end
+	if JAnivia.CSettings.useR and Rrdy then
+		local rtype, rcheck = Rchecks(Target)
 		if rtype ~= nil then
 			if rtype == "vpred" then
 				castR(rcheck)
@@ -272,6 +307,10 @@ end
 
 function Harass()
 	--WIP
+end
+
+function LaneClear()
+
 end
 
 function FoF()
@@ -294,7 +333,7 @@ function FoF()
 	if acount*100/ecount < JAnivia.SSettings.FOF.afofr*100/JAnivia.SSettings.FOF.efofr then
 		return false
 	end
-	if myHero.maxHealth/myHero.health < JAnivia.SSettings.FOF.fofhp then
+	if ((myHero.health/myHero.maxHealth)*100) < JAnivia.SSettings.FOF.fofhp then
 		return false
 	end
 	return fight
@@ -328,7 +367,7 @@ function ValidR()
 	local ccount = 0
 	for i=1, heroManager.iCount, 1 do
 		local champ = heroManager:GetHero(i)
-		if champ.team ~= myHero.team then
+		if champ.team ~= myHero.team and ValidTarget(champ) then
 			if GetDistance(champ, Rmiss) < JAnivia.SSettings.Rset.rdist then
 				ccount = ccount + 1
 			end
@@ -379,6 +418,14 @@ function castE(targ)
 	end
 end
 
+function castW(targ)
+	if VIP_USER then
+		Packet("S_CAST", {spellId = _W, toX = targ.x, toY = targ.z , fromX = targ.x , fromY = targ.z }):send()	
+	else
+		CastSpell(_W, targ.x, targ.z)
+	end
+end
+
 function castR(targ)
 	if targ == nil and Rmiss ~= nil then
 		if VIP_USER then
@@ -420,9 +467,6 @@ function Qchecks(targ)
 	return retval, rettype
 end
 
-function Wchecks()
-
-end
 
 function Echecks(targ)
 	if targ == nil then return false end
@@ -446,17 +490,40 @@ function autoE()
 end
 
 function Rchecks(targ)
+	local rettype = nil
+	local retval = nil
 	if GetDistance(targ, myHero) < 650 then
-		if JAnivia.SSettings.Vpred then
-			CastPosition, HitChance = VP:GetCircleCastPosition(targ, 0.250, 210, 650, math.huge)
+		--[[if JAnivia.SSettings.Vpred then
+			CastPosition, HitChance = VP:GetCircularCastPosition(targ, 0.250, 210, 650, 3000)
 			if HitChance == 2 or HitChance == 4 or HitChance == 5 and GetDistance(CastPosition, myHero) < 650 then
+				PrintChat("Should have cast R")
 				retval = CastPosition
 				rettype = "vpred"
 			end
-		end
-		if not JAnivia.SSettings.Vpred then 
+		end]]--
+		--if not JAnivia.SSettings.Vpred then 
 			retval = "free"
 			rettype = "free"
+	--	end
+	end
+	return rettype,retval
+end
+
+function Wchecks(targ)
+	if FoF() and JAnivia.SSettings.Wset.fightW then
+		local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
+		local pos = Vector(targ.x - (vectorX * 175),y, targ.z - (vectorZ * 175))
+		if GetDistance(pos, myHero) < 1000 then
+			return pos 
 		end
-	end			
+	end
+	if not FoF() and JAnivia.SSettings.Wset.flightW then
+		PrintChat("target = "..targ.charName.."!")
+		local vectorX,y,vectorZ = (Vector(targ) - Vector(myHero)):normalized():unpack()
+		local pos = Vector(targ.x - (vectorX * 175),y, targ.z - (vectorZ * 175))
+		if GetDistance(pos, myHero) < 1000 then
+			return pos 
+		end
+	end
+	return nil
 end
