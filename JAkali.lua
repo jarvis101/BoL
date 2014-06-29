@@ -1,4 +1,4 @@
-local version = "2.04"
+local version = "2.05"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JAkali"
@@ -75,8 +75,8 @@ function Menu()
 	AkMen.LCSettings:addParam("LCmMove","Move to Mouse", SCRIPT_PARAM_ONOFF, true)
 	
 	AkMen:addSubMenu("Skill Settings", "SSettings")
-	AkMen.SSettings:addParam("CQblock","Block Q use if target is marked", SCRIPT_PARAM_ONOFF, true)
-	AkMen.SSettings:addParam("CuseEonlyifQ","Only use E on Q marked targets", SCRIPT_PARAM_ONOFF, true)
+	AkMen.SSettings:addParam("Qblock","Block Q use if target is marked", SCRIPT_PARAM_ONOFF, true)
+	AkMen.SSettings:addParam("useEonlyifQ","Only use E on Q marked targets", SCRIPT_PARAM_ONOFF, true)
 	
 	AkMen:addSubMenu("Kill Steal", "KS")
 	AkMen.KS:addParam("Q","Use Q", SCRIPT_PARAM_ONOFF, true)
@@ -575,7 +575,7 @@ function checkQ(targ)
 			if not TargetHaveBuff("AkaliMota", targ) and AkMen.SSettings.Qblock then
 				useQ(targ)
 			end
-			if TargetHaveBuff("AkaliMota", targ) and targ.health < getDmg("Q", targ, myHero) and AkMen.SSettings.Qblock then
+			if not TargetHaveBuff("AkaliMota", targ) and targ.health < getDmg("Q", targ, myHero) and AkMen.SSettings.Qblock then
 				useQ(targ)
 			end
 			if not AkMen.SSettings.Qblock then
@@ -601,7 +601,7 @@ end
 function KS()
 	for i=1, heroManager.iCount, 1 do
 		local champ = heroManager:GetHero(i)
-		if champ.team ~= myHero.team then
+		if champ.team ~= myHero.team and ValidTarget(champ) then
 			if AkMen.KS.Q and Qrdy and GetDistance(champ, myHero) < 600 and champ.health < getDmg("Q",champ,myHero) then useQ(champ) end
 			if AkMen.KS.E and Erdy and GetDistance(champ, myHero) < 325 and champ.health < getDmg("E",champ,myHero) then useE(champ) end
 			if AkMen.KS.R and Rrdy and GetDistance(champ, myHero) < 800 and champ.health < getDmg("R",champ,myHero) then useR(champ) end
