@@ -1,4 +1,4 @@
-local version = "2.03"
+local version = "2.04"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JAkali"
@@ -98,6 +98,7 @@ function Menu()
 	AkMen:addSubMenu("Draw Settings", "DSettings")
 	AkMen.DSettings:addParam("drawQ", "Draw Q radius", SCRIPT_PARAM_ONOFF, true)
 	AkMen.DSettings:addParam("drawE", "Draw E radius", SCRIPT_PARAM_ONOFF, true)
+	AkMen.DSettings:addParam("drawWcd", "W count down", SCRIPT_PARAM_ONOFF, true)
 	AkMen.DSettings:addParam("drawR", "Draw R radius", SCRIPT_PARAM_ONOFF, true)
 	AkMen.DSettings:addParam("drawTar", "Draw red circle on target", SCRIPT_PARAM_ONOFF, true)
 	AkMen.DSettings:addParam("drawKill", "Draw Killable", SCRIPT_PARAM_ONOFF, true)
@@ -143,6 +144,7 @@ function init()
 	minionAtkVal = 0
 	AAwind = 0
 	AAanim = 0
+	Wpos = nil
 end
 
 function getAAdmg(targ)
@@ -173,6 +175,13 @@ function OnDraw()
 	if AkMen.DSettings.drawTar and Target ~= nil then 
 		DrawCircle(Target.x, Target.y, Target.z, 50, ARGB(214, 214, 1,33))
 	end
+	if AkMen.DSettings.drawWcd and Wcd ~= nil then
+		DrawText3D(Wcount(), Wpos.x, Wpos.y, Wpos.z, 30, RGB(255,255,255), true)
+	end
+end
+
+function Wcount()
+	return tostring(math.ceil(Wcd - os.clock()))
 end
 
 function OnTick()
@@ -206,11 +215,19 @@ function OnCreateObj(obj)
 	if obj.isMe and (obj.name == "purplehands_buf.troy" or obj.name == "enrage_buf.troy") then
 		haveBuff = true
 	end
+	if obj.name == "akali_smoke_bomb_tar_team_green.troy" then
+		Wpos = obj
+		Wcd = os.clock() + 8
+	end
 end
 
 function OnDeleteObj(obj)
 	if obj.isMe and (obj.name == "purplehands_buf.troy" or obj.name == "enrage_buf.troy") then
 		haveBuff = false
+	end
+	if obj.name == "akali_smoke_bomb_tar_team_green.troy" then
+		Wcd = nil
+		Wpos = nil
 	end
 end
 
@@ -226,7 +243,9 @@ function Flee()
 	if Rrdy and mPos ~= nil and GetDistance(mPos, mousePos) < GetDistance(mousePos) then
 		useR(mPos) 
 	else 
-		mMove() 
+		local MousePos = Vector(mousePos.x, mousePos.y, mousePos.z)
+        local Position = myHero + (Vector(MousePos) - myHero):normalized()*300
+        myHero:MoveTo(Position.x, Position.z)
 	end
 end
 
@@ -295,8 +314,10 @@ function Combo(targ)
 			checkE(targ)
 		end
 		if AkMen.CSettings.CuseR and Rrdy then
+			
 			if AkMen.CSettings.CuseRchase then
-				if Target.health < (AkMen.CSettings.CuseRchaseHP * (Target.maxHealth / 100)) and GetDistance(Target) > AkMen.CSettings.CuseRchaseDistance then
+				if ((Target.health/Target.maxHealth)*100) < AkMen.CSettings.CuseRchaseHP and GetDistance(Target) > AkMen.CSettings.CuseRchaseDistance and GetDistance(Target, myHero) < 800 then
+					PrintChat("trying to r")
 					useR(targ)
 				end
 			else
