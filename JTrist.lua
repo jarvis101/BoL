@@ -1,4 +1,4 @@
-local version = "1.41"
+local version = "1.42"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -466,9 +466,8 @@ function CheckW(targ, vectored, forceR)
 		CastPosition, HitChance = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
 		if HitChance == 2 or HitChance == 4 or HitChance == 5 then
 			if vectored then
-				local targetPosition = Vector(CastPosition.x, CastPosition.y, CastPosition.z)
-				local myPosition = Vector(myHero.x, myHero.y, myHero.z)		
-				local Destination = targetPosition + (targetPosition - myPosition)*((150/myHero:GetDistance(CastPosition)))
+				local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
+				local Destination = Vector(targ.x - (vectorX * 150),y, targ.z - (vectorZ * 150))
 				if GetDistance(Destination, myHero) < Wrange then 
 					if forceR then Wused = true end
 					return ttype, Destination 
@@ -487,9 +486,8 @@ function CheckW(targ, vectored, forceR)
 	end
 	if not JTrist.SSettings.WSettings.Vpred and not JTrist.SSettings.Prod then
 		if vectored then
-			local targetPosition = Vector(targ.x, targ.y, targ.z)
-			local myPosition = Vector(myHero.x, myHero.y, myHero.z)		
-			local Destination = targetPosition + (targetPosition - myPosition)*((150/myHero:GetDistance(CastPosition)))
+			local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
+			local Destination = Vector(targ.x - (vectorX * 150),y, targ.z - (vectorZ * 150))
 			ttype = "free"
 			if GetDistance(Destination, myHero) < Wrange then
 				if forceR then Wused = true end
