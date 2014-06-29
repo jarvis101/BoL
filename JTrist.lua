@@ -1,4 +1,4 @@
-local version = "1.40"
+local version = "1.41"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -205,7 +205,7 @@ function getAAdmg(targ)
 end
 
 function getTrange()
-	return myHero.range + + 150
+	return myHero.range + 150
 end
 
 function OnDraw()
