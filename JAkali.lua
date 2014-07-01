@@ -1,4 +1,4 @@
-local version = "2.06"
+local version = "2.07"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JAkali"
@@ -44,7 +44,7 @@ function OnLoad()
 
 	Menu()
 	init()
-	PrintChat("<font color='#aaff34'>JAkali</font>")
+	PrintChat("<font color='#aaff34'>JAkali - Remapped some hotkeys, Check your settings!</font>")
 end
 
 function Menu()
@@ -85,9 +85,8 @@ function Menu()
 	
 	AkMen:addParam("Combo","Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 	AkMen:addParam("Harass","Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-	AkMen:addParam("Farm","Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
 	AkMen:addParam("LaneClear","LaneClear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
-	AkMen:addParam("Flee","Flee", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
+	AkMen:addParam("Flee","Flee", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
 	
 	AkMen:addSubMenu("Item Settings", "ISettings")
 	AkMen.ISettings:addParam("iCombo", "Use Items in Combo", SCRIPT_PARAM_ONOFF, true)
@@ -250,7 +249,6 @@ function Flee()
 end
 
 function getNearestMinion(unit)
-
 	local closestMinion = nil
 	local nearestDistance = 0
 
@@ -471,7 +469,7 @@ function useDFG(targ)
 		local dfgdmg = (DFG and getDmg("DFG", targ, myHero) or 0)
 		local Cdmg = Qdmg + Edmg + Rdmg + AAdmg
 		
-		if targ.health > Cdmg*DFGnComboControl + HexTechdmg + Blgdmg + Lichdmg and targ.health - dfgdmg < ((Cdmg*DFGnComboControl)- Cdmg) + ((HexTechdmg + Blgdmg + Lichdmg + Cdmg)*1.2) then
+		if targ.health > Cdmg*AkMen.ISettings.DFGnComboControl + HexTechdmg + Blgdmg + Lichdmg and targ.health - dfgdmg < ((Cdmg*AkMen.ISettings.DFGnComboControl)- Cdmg) + ((HexTechdmg + Blgdmg + Lichdmg + Cdmg)*1.2) then
 			CastSpell(DFG, targ)
 		end
 	else
