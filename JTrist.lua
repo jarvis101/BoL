@@ -37,9 +37,16 @@ if myHero.charName ~= "Tristana" then return end
 require "SOW"
 require "VPrediction"
 
+if VIP_USER then
+	require "Prodiction"
+end
+
 local Wused = false
 local Wrange = 900
 local Wdelay = 0
+
+local Prod
+local ProdW
 
 local ToInterrupt = {}
 
@@ -107,7 +114,7 @@ function Menu()
 	JTrist:addSubMenu("Skill Settings", "SSettings")
 	JTrist.SSettings:addSubMenu("W Settings", "WSettings")
 	JTrist.SSettings.WSettings:addParam("Vpred", "Use Vprediction for W", SCRIPT_PARAM_ONOFF, true)
-	JTrist.SSettings.WSettings:addParam("Prod", "(not working)", SCRIPT_PARAM_ONOFF, true)
+	JTrist.SSettings.WSettings:addParam("Prod", "(not working)", SCRIPT_PARAM_ONOFF, false)
 	JTrist.SSettings.WSettings:addParam("Ak", "Don't use W if more than #", SCRIPT_PARAM_INFO, "")
 	JTrist.SSettings.WSettings:addParam("safeW", "enemies around", SCRIPT_PARAM_SLICE, 4, 1, 4, 0)
 	JTrist.SSettings.WSettings:addParam("safeWrange", "Safety Distance", SCRIPT_PARAM_SLICE, 1000, 500 , 2000, 0)
@@ -167,6 +174,10 @@ function OnLoad()
 	SOWi:RegisterAfterAttackCallback(AutoAttackReset)
 	Menu()
 	InitInterrupt()
+	if VIP_USER then
+		Prod = ProdictManager.GetInstance()
+		ProdW = Prod:AddProdictionObject(_W, 900, 700, 0.250, 250)
+	end
 	if myHero:GetSpellData(SUMMONER_1).name:find("SummonerDot") then 
 		ignite = SUMMONER_1
 	elseif myHero:GetSpellData(SUMMONER_2).name:find("SummonerDot") then 
@@ -235,7 +246,9 @@ function OnTick()
 	Rrdy = (myHero:CanUseSpell(_R) == READY)
 	Irdy = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
 	checkItems()
-	
+	if VIP_USER and JTrist.SSettings.Prod and Target ~= nil then
+		PQP=ProdQ:GetPrediction(Target)
+	end
 	KS()
 	if JTrist.Combo and Target ~= nil then
 		Combo()
@@ -275,17 +288,15 @@ function KS()
 	end
 	if targ ~= nil then
 		if JTrist.KS.ksW and Wrdy and wkill then
-			local ttype, dest = CheckW(targ, false, false)
-			if ttype == "vpred" and dest ~= nil then castW(dest) end
-			if ttype == "free" and dest ~= nil then castW(dest) end
+			local dest = CheckW(targ, false, false)
+			if dest ~= nil then castW(dest) end
 		end
 		if JTrist.KS.ksR and Rrdy and rkill then
 			castR(targ)
 		end
 		if JTrist.KS.ksW and JTrist.KS.ksR and Wrdy and Rrdy and rwkill then
-			local ttype, dest = CheckW(targ, false, true)
-			if ttype == "vpred" and dest ~= nil then castW(dest) end
-			if ttype == "free" and dest ~= nil then castW(dest) end
+			local dest = CheckW(targ, false, true)
+			if dest ~= nil then castW(dest) end
 		end
 		if ignite ~= nil then
 			if JTrist.KS.useI and targ.health < getDmg("IGNITE", targ, myHero) and GetDistance(targ, myHero) < 500 and Irdy then
@@ -325,9 +336,8 @@ function Combo()
         end
     end
     if JTrist.CSettings.useW then
-        local ttype, dest = CheckW(Target, JTrist.SSettings.WSettings.vectoredW, false)
-		if ttype == "vpred" and dest ~= nil then castW(dest) end
-		if ttype == "free" and dest ~= nil then castW(dest) end
+        local dest = CheckW(Target, JTrist.SSettings.WSettings.vectoredW, false)
+		if dest ~= nil then castW(dest) end
     end
     if JTrist.CSettings.useE then
         if Erdy and (GetDistance(Target) < getTrange()) then
@@ -381,9 +391,8 @@ function Harass()
 		end
 	end
 	if JTrist.HSettings.useW then
-		local ttype, dest = CheckW(Target, JTrist.SSettings.WSettings.vectoredW, false)
-		if ttype == "vpred" and dest ~= nil then castW(dest) end
-		if ttype == "free" and dest ~= nil then castW(dest) end
+		local dest = checkW(Target, JTrist.SSettings.WSettings.vectoredW, false)
+		if dest ~= nil then castW(dest) end
     end
 	if JTrist.HSettings.useE then
 		if Erdy and GetDistance(Target, myHero) < getTrange() then
@@ -394,9 +403,8 @@ end
 
 function IntPult()
 	if Wrdy and Rrdy and not Wused then
-		local ttype, dest = CheckW(Target, true, true)
-		if ttype == "vpred" and dest ~= nil then castW(dest) end
-		if ttype == "free" and dest ~= nil then castW(dest) end
+		local dest = CheckW(Target, true, true)
+		if dest ~= nil then castW(dest) end
 	end
 end
 
@@ -458,57 +466,71 @@ end
 function CheckW(targ, vectored, forceR)
 	if not Wrdy then return nil, nil end
 	if JTrist.SSettings.WSettings.Wdelay and ((Wdelay + JTrist.SSettings.WSettings.Wdval) > os.clock()) then return nil, nil end
-	local ttype = nil
 	local CastPosition = nil
 	local HitChance = nil
-	if JTrist.SSettings.WSettings.Vpred then
-		ttype = "vpred"
+	if JTrist.SSettings.WSettings.Vpred and not JTrist.SSettings.WSettings.Prod then
 		CastPosition, HitChance = VP:GetCircularCastPosition(Target, 0.250, 250, 900, 700)
 		if HitChance == 2 or HitChance == 4 or HitChance == 5 then
 			if vectored then
-				local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
-				local Destination = Vector(targ.x - (vectorX * 150),y, targ.z - (vectorZ * 150))
-				if GetDistance(Destination, myHero) < Wrange then 
+				local foo = GetVector(CastPosition, myHero)
+				if foo ~= nil and  GetDistance(foo, myHero) < Wrange then 
 					if forceR then Wused = true end
-					return ttype, Destination 
+					return foo 
 				else 
-					return nil, nil 
+					return nil 
 				end
 			else
 				if GetDistance(CastPosition, myHero) < Wrange then 
 					if forceR then Wused = true end
-					return ttype, CastPosition 
+					return CastPosition 
 				else 
-					return nil, nil 
+					return nil 
 				end
 			end
 		end
 	end
-	if not JTrist.SSettings.WSettings.Vpred and not JTrist.SSettings.Prod then
+	if not JTrist.SSettings.WSettings.Vpred and JTrist.SSettings.WSettings.Prod then
 		if vectored then
-			local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
-			local Destination = Vector(targ.x - (vectorX * 150),y, targ.z - (vectorZ * 150))
+			if PQP ~= nil then
+				local foo = GetVector(targ, myHero)
+				if foo ~= nil and GetDistance(foo, myHero) < Wrange then
+					return foo
+				end
+			end
+		else
+			if PQP ~= nil and GetDistance (PQP,myHero) < Qrange then return PQP else return nil end
+		end
+	else
+		if vectored then
+			local foo = GetVector(targ, myHero)
 			ttype = "free"
 			if GetDistance(Destination, myHero) < Wrange then
 				if forceR then Wused = true end
-				return ttype, Destination 
+				return foo 
 			else 
-				return nil, nil 
+				return nil 
 			end
 		else
 			if GetDistance(targ, myHero) < Wrange then 
 				if forceR then Wused = true end
-				return "free", targ 
+				return targ 
 			else 
-				return nil, nil
+				return nil
 			end
 		end
 	end			
 end
 
+function GetVector(targ, dest, distance)
+	local vectorX,y,vectorZ = (Vector(dest) - Vector(targ)):normalized():unpack()
+	if distance == nil then distance = 150 end
+	local pos = Vector(targ.x - (vectorX * distance),y, targ.z - (vectorZ * distance))
+	return pos
+end
+
 function analyzeCombat(targ)
 	local Wdmg = getDmg("W", targ, myHero)
-	local Edmg = getDmg("E", targ, myHero)
+	local Edmg = getDmg("E", targ, myHero, 3)
 	local Rdmg = getDmg("R", targ, myHero)
 	local AAdmg = getDmg("AD", targ, myHero)
 	local idmg = getDmg("IGNITE", targ, myHero)
@@ -520,16 +542,16 @@ function analyzeCombat(targ)
 	
 	if not Irdy then idmg = 0 end
 	local Cdmg = 0
-	if not DFGR then
-		Cdmg = Wdmg + Edmg + Rdmg
-		if Lichdmg ~= nil then Cdmg = Cdmg + Lichdmg end
-		if hexTechdmg ~= nil then Cdmg = Cdmg + hexTechdmg end
-		if Blgdmg ~= nil then Cdmg = Cdmg + Blgdmg end
-	else
-		dmg = ((Wdmg + Edmg + Rdmg)*1.2)
+	if DFGR then
+		Cdmg = ((Wdmg + Edmg + Rdmg)*1.2)
 		if Lichdmg ~= nil then Cdmg = Cdmg + Lichdmg end
 		if dfgdmg ~= nil then Cdmg = Cdmg + dfgdmg end
 		if hexTechdmg ~= nil then Cdmg = Cdmg + hexTechdmg end
+		if Blgdmg ~= nil then Cdmg = Cdmg + Blgdmg end
+	else
+		Cdmg = Wdmg + Edmg + Rdmg
+		if Lichdmg ~= nil then Cdmg = Cdmg + Lichdmg end
+		if HexTechdmg ~= nil then Cdmg = Cdmg + hexTechdmg end
 		if Blgdmg ~= nil then Cdmg = Cdmg + Blgdmg end		
 	end
 	
