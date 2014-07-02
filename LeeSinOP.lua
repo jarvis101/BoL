@@ -69,18 +69,21 @@ function checkitems()
 	local ward7R = (ward7 ~= nil and myHero:CanUseSpell(ward7) == READY)
 	local ward8 = GetInventorySlotItem(3160)
 	local ward8R = (ward8 ~= nil and myHero:CanUseSpell(ward8) == READY)
+	local ward9 = GetInventorySlotItem(3340)
+	local ward9R = (ward8 ~= nil and myHero:CanUseSpell(ward8) == READY)
 	
 	ward = nil
 	wardR = nil
 	
-	if ward1 ~= nil and ward1R then ward = ward1
-	elseif ward2 ~= nil and ward1R then ward = ward2 wardR = ward1R
-	elseif ward3 ~= nil and ward1R then ward = ward3 wardR = ward1R
-	elseif ward4 ~= nil and ward1R then ward = ward4 wardR = ward1R
-	elseif ward5 ~= nil and ward1R then ward = ward5 wardR = ward1R
-	elseif ward6 ~= nil and ward1R then ward = ward6 wardR = ward1R
-	elseif ward7 ~= nil and ward1R then ward = ward7 wardR = ward1R
-	elseif ward8 ~= nil and ward1R then ward = ward8 wardR = ward1R end
+	if ward1R then ward = ward1
+	elseif ward2R then ward = ward2 wardR = ward2R
+	elseif ward3R then ward = ward3 wardR = ward3R
+	elseif ward4R then ward = ward4 wardR = ward4R
+	elseif ward5R then ward = ward5 wardR = ward5R
+	elseif ward6R then ward = ward6 wardR = ward6R
+	elseif ward7R then ward = ward7 wardR = ward7R
+	elseif ward8R then ward = ward8 wardR = ward8R
+	elseif ward9R then ward = ward9 wardR = ward9R	end
 	
 	Hydra = GetInventorySlotItem(3074)
 	RuinedKing = GetInventorySlotItem(3153)
@@ -126,7 +129,7 @@ function OnLoad()
 		ProdQ = Prod:AddProdictionObject(_Q, 1100, 1800, 0.250, 70)
 	end
 	ts = TargetSelector(TARGET_NEAR_MOUSE, 1300, DAMAGE_PHYSICAL)	
-	ts.name = "LeeSin"
+	ts.name = "Target"
 	Menu()
 	Config:addTS(ts)
 	mypos = myHero
@@ -166,6 +169,7 @@ function Menu()
 	Config:addParam("LaneClear","LaneClear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
 	Config:addParam("Mobile","Mobility", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
 	Config:addParam("Insec","Insec", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("B"))
+	Config:addParam("WardJump","WardJump", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("T"))
 	
 	Config:addSubMenu("Skills", "SSettings")
 	
@@ -276,6 +280,7 @@ function OnTick()
 	end
 	if Config.LaneClear then LaneClear() end
 	if Config.Mobile then Mobile() end
+	if Config.WardJump then WJ() end
 end
 
 function Combo()
@@ -292,18 +297,18 @@ function Combo()
 		QoneCheck(Target)
 	end
 	if Config.CSettings.delay.useW and Wrdy and myW.name ~= "BlindMonkWOne" then
-		if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.CSettings.delay.delayW and os.clock() < (Wtime + 2.4) then return end
+		if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.CSettings.delay.delayW and os.clock() and GetDistance(Target, myHero) < 250 then return end
 		useW()
 	end
 	if Config.CSettings.delay.useE and Erdy and myE.name ~= "BlindMonkEOne" then
-		if Config.CSettings.delay.delayE and TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and os.clock() < (Etime + 2.2) then return end
+		if Config.CSettings.delay.delayE and TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and os.clock() and GetDistance(Target, myHero) < 250 then return end
 		EtwoCheck(Target)
 	end
 	if Rrdy and Config.CSettings.useR then
 		Rcheck(Target)
 	end
 	if Qrdy and Config.CSettings.delay.useQ and myQ.name ~= "BlindMonkQOne" then
-		if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.CSettings.delay.delayQ and os.clock() < (Qtime + 2.0) then return end
+		if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.CSettings.delay.delayQ and os.clock() and GetDistance(Target, myHero) < 250 then return end
 		QtwoCheck(Target)
 	end
 end
@@ -319,15 +324,15 @@ function Harass()
 		QoneCheck(Target)
 	end
 	if Config.HSettings.delay.useW and Wrdy and myW.name ~= "BlindMonkWOne" then
-		if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.HSettings.delay.delayW and os.clock() < (Wtime + 2.4) then return end
+		if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.HSettings.delay.delayW and os.clock() < (Wtime + 2.4) and GetDistance(Target, myHero) < 250 then return end
 		useW(nil)
 	end
 	if Config.HSettings.delay.useE and Erdy and myE.name ~= "BlindMonkEOne" then
-		if Config.HSettings.delay.delayE and TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and os.clock() < (Etime + 2.2) then return end
+		if Config.HSettings.delay.delayE and TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and os.clock() < (Etime + 2.2) and GetDistance(Target, myHero) < 250 then return end
 		EtwoCheck(Target)
 	end
 	if Qrdy and Config.HSettings.delay.useQ and myQ.name ~= "BlindMonkQOne" then
-		if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.HSettings.delay.delayQ and os.clock() < (Qtime + 2.0) then return end
+		if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.HSettings.delay.delayQ and os.clock() < (Qtime + 2.0) and GetDistance(Target, myHero) < 250 then return end
 		QtwoCheck(Target)
 	end
 end
@@ -373,16 +378,33 @@ function LaneClear()
 			QoneCheck(tarMin)
 		end
 		if Config.LSettings.delay.useW and Wrdy and myW.name ~= "BlindMonkWOne" then
-			if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.LSettings.delay.delayW and os.clock() < (Wtime + 2.4) then return end
+			if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.LSettings.delay.delayW and os.clock() < (Wtime + 2.4) and GetDistance(tarMin, myHero) < 250 then return end
 			useW(nil)
 		end
 		if Config.LSettings.delay.useE and Erdy and myE.name ~= "BlindMonkEOne" then
-			if Config.LSettings.delay.delayE and TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and os.clock() < (Etime + 2.2) then return end
+			if Config.LSettings.delay.delayE and TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and os.clock() < (Etime + 2.2) and GetDistance(tarMin, myHero) < 250 then return end
 			EtwoCheck(tarMin)
 		end
 		if Qrdy and Config.LSettings.delay.useQ and myQ.name ~= "BlindMonkQOne" then
-			if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.LSettings.delay.delayQ and os.clock() < (Qtime + 2.0) then return end
+			if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.LSettings.delay.delayQ and os.clock() < (Qtime + 2.0) and GetDistance(tarMin, myHero) < 250 then return end
 			QtwoCheck(tarMin)
+		end
+	end
+end
+
+function WJ()
+	if Wrdy and myW.name == "BlindMonkWOne" then
+		if os.clock()-WardTime < 1 and os.clock()-WardTime > 0.001 then
+			useW(recentWard)
+		else
+			if wardR then
+				if GetDistance(mousePos, myHero) < 590 then
+					CastSpell(ward, mousePos.x, mousePos.z)
+				else 
+					local pos = GetReverseVector(myHero, mousePos, 600)
+					if pos ~= nil then CastSpell(ward, pos.x, pos.z) end
+				end
+			end
 		end
 	end
 end
@@ -536,7 +558,11 @@ function Rcheck(targ)
 end
 
 function Debug()
-	if not TargetHaveBuff("blindmonkpassive_cosmetic", myHero) then PrintChat("woo") end
+	for i = 1, 4000 do
+		local item = GetInventorySlotItem(i)
+		local itemR = (item ~= nil and myHero:CanUseSpell(item))
+		if itemR then PrintChat(tostring(i)) end
+	end
 end
 
 function getNearestTarget(unit, ally)
