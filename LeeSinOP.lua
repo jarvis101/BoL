@@ -27,6 +27,7 @@ local Etime = os.clock
 local JkickPos = nil
 
 local jumpkick = false
+local ksr = false
 
 local ward = nil
 local wardR = nil
@@ -162,7 +163,7 @@ function OnLoad()
 end
 
 function Menu()
-	Config = scriptConfig("Config", "Config")
+	Config = scriptConfig("OP Lee", "Config")
 	
 	Config:addParam("Combo","Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 	Config:addParam("Harass","Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
@@ -214,13 +215,15 @@ function Menu()
 	Config:addSubMenu("Skill Settings","SSettings")
 	Config.SSettings:addParam("Vpred","Use Vprediction", SCRIPT_PARAM_ONOFF, true)
 	Config.SSettings:addParam("Prod","Use Prodiction(VIP ONLY)", SCRIPT_PARAM_ONOFF, false)
-	Config.SSettings:addParam("checkQCollisions","check for minion collision on Q", SCRIPT_PARAM_ONOFF, true)
+	Config.SSettings:addParam("CheckQCollisions","check for minion collision on Q", SCRIPT_PARAM_ONOFF, true)
 	Config.SSettings:addParam("smite","Smite minion collisions for Q", SCRIPT_PARAM_ONOFF, true)
 	Config.SSettings:addParam("alwaysinsec","always insec R", SCRIPT_PARAM_ONOFF, true)
 	
 	
 	Config:addSubMenu("Insec Settings", "InSettings")
 	Config.InSettings:addParam("jkick","Jump kick if flash unavailable(WIP)", SCRIPT_PARAM_ONOFF, true)
+	Config.InSettings:addParam("flash","Use Flash(WIP)", SCRIPT_PARAM_ONOFF, true)
+	Config.InSettings:addParam("mouse","Move to mouse(otherwise will move to target)", SCRIPT_PARAM_ONOFF, false)
 	
 	Config.InSettings:addSubMenu("Direction Settings", "Direct")
 	Config.InSettings.Direct:addParam("rand4", "Set to 7 to disable", SCRIPT_PARAM_INFO, "")
@@ -234,8 +237,8 @@ function Menu()
 	
 	Config.InSettings:addSubMenu("Kick to Ally", "Apos")
 	local foo = 1
+	Config.InSettings.Apos:addParam("rand5", "Set to 5 to disable", SCRIPT_PARAM_INFO, "")
 	for i, ally in pairs(AllyTable) do
-		Config.InSettings.Apos:addParam("rand5", "Set to 5 to disable", SCRIPT_PARAM_INFO, "")
 		if foo == 1 then Config.InSettings.Apos:addParam("AA",tostring(ally.charName), SCRIPT_PARAM_SLICE, foo, 1, 5, 0) end
 		if foo == 2 then Config.InSettings.Apos:addParam("AB",tostring(ally.charName), SCRIPT_PARAM_SLICE, foo, 1, 5, 0) end
 		if foo == 3 then Config.InSettings.Apos:addParam("AC",tostring(ally.charName), SCRIPT_PARAM_SLICE, foo, 1, 5, 0) end
@@ -251,6 +254,20 @@ function Menu()
 	Config.InSettings.Tpos:addParam("rand1", "If injured ally near", SCRIPT_PARAM_INFO, "")
 	Config.InSettings.Tpos:addParam("AvT","turret then next priority", SCRIPT_PARAM_ONOFF, true)
 	Config.InSettings.Tpos:addParam("AvTpcnt","MinHealth", SCRIPT_PARAM_SLICE, 20, 5, 101, 0)
+	
+	Config:addSubMenu("Kill Steal", "KS")
+	Config.KS:addParam("bool","Use Kill Steal", SCRIPT_PARAM_ONOFF, true)
+	Config.KS:addParam("useQ","KS with Q", SCRIPT_PARAM_ONOFF, true)
+	Config.KS:addParam("useE","KS with E", SCRIPT_PARAM_ONOFF, true)
+	Config.KS:addParam("useR","KS with R", SCRIPT_PARAM_ONOFF, true)
+	Config.KS:addParam("useI","KS with Ignite", SCRIPT_PARAM_ONOFF, true)
+	
+	Config:addSubMenu("Draw Settings", "Draw")
+	Config.Draw:addParam("Qrange","Draw Q range", SCRIPT_PARAM_ONOFF, true)
+	Config.Draw:addParam("Wrange","Draw W range", SCRIPT_PARAM_ONOFF, false)
+	Config.Draw:addParam("Erange","Draw E range", SCRIPT_PARAM_ONOFF, true)
+	Config.Draw:addParam("Rrange","Draw R range", SCRIPT_PARAM_ONOFF, true)
+	Config.Draw:addParam("WJrange","Draw Ward Jump range", SCRIPT_PARAM_ONOFF, true)
 	
 	Config:addSubMenu("Orbwalker", "SOWiorb")
 	SOWi:LoadToMenu(Config.SOWiorb)
@@ -273,6 +290,10 @@ function OnTick()
 		PQP=ProdQ:GetPrediction(Target)
 	end
 	
+	if Config.KS.bool then
+		KS()
+	end
+	
 	if Target ~= nil and ValidTarget(Target) then
 		if Config.Combo then Combo() end
 		if Config.Harass then Harass() end
@@ -281,6 +302,44 @@ function OnTick()
 	if Config.LaneClear then LaneClear() end
 	if Config.Mobile then Mobile() end
 	if Config.WardJump then WJ() end
+end
+
+function OnDraw()
+	if Config.Draw.Qrange then 
+		DrawCircle(myHero.x, myHero.y, myHero.z, 1100, ARGB(214,66,33,33))
+	end
+	if Config.Draw.Wrange then 
+		DrawCircle(myHero.x, myHero.y, myHero.z, Wrange, ARGB(214,1,33,33))
+	end
+	if Config.Draw.Erange then 
+		DrawCircle(myHero.x, myHero.y, myHero.z, Erange, ARGB(214,66,33,33))
+	end
+	if Config.Draw.Rrange then 
+		DrawCircle(myHero.x, myHero.y, myHero.z, Rrange, ARGB(214,255,0,0))
+	end
+	if Config.Draw.WJrange then 
+		DrawCircle(myHero.x, myHero.y, myHero.z, 590, ARGB(214,1,1,33))
+	end
+end
+
+function KS()
+	for i, enemy in pairs(EnemyTable) do 
+		if ValidTarget(enemy) then
+			if Config.KS.useQ and enemy.health < getDmg("Q", enemy, myHero) and GetDistance(enemy, myHero) < 1100 then
+				QoneCheck(enemy)
+			end
+			if Config.KS.useE and enemy.health < getDmg("E", enemy, myHero) and GetDistance(enemy, myHero) < 400 then 
+				useW()
+			end
+			if Config.KS.useR and enemy.health < getDmg("R", enemy, myHero) and GetDistance(enemy, myHero) < 325 then
+				ksr = true
+				useR(enemy)
+			end
+			if Config.KS.useI and enemy.health < getDmg("IGNITE", enemy, myHero) and GetDistance(enemy, myHero) < 550 then
+				CastSpell(ignite, enemy)
+			end
+		end
+	end
 end
 
 function Combo()
@@ -447,33 +506,39 @@ function Mobile(isInsec, noward)
 end
 
 function Insec()
-	if (Frdy and Rrdy) then
+	if (Frdy and Rrdy and Config.InSettings.flash) then
 		if GetDistance(Target, myHero) > 300 then
-			Mobile(true)
+			if Config.InSettings.mouse then
+				Mobile(nil, nil)
+			else
+				Mobile(true, nil)
+			end
 		else
 			useR(Target)
 		end
 	elseif Config.InSettings.jkick and Rrdy then
 		if GetDistance(Target, myHero) > 300 then
-			Mobile(true, true)
+			if Config.InSettings.mouse then
+				Mobile(nil, true)
+			else
+				Mobile(true,true)
+			end
 		else
 			if triedR == true then PrintChat("fail") triedR = false end
 			if JkickPos == nil then JkickPos = GetInsecFunc(1, Target)
-			else WardJump(JkickPos) end
+			else 
+				if Wrdy and myW.name == "BlindMonkWOne" then
+					if os.clock()-WardTime < 1 and os.clock()-WardTime > 0.001 then
+						jumpkick = true
+						useW(recentWard)
+					elseif ward ~= nil then
+						CastSpell(ward, pos.x, pos.z)
+					end
+				else
+					useR(Target)
+				end
+			end
 		end	
-	end
-end
-
-function WardJump(pos)
-	if Wrdy and myW.name == "BlindMonkWOne" then
-		if os.clock()-WardTime < 1 and os.clock()-WardTime > 0.001 then
-			jumpkick = true
-			useW(recentWard)
-		elseif ward ~= nil then
-			CastSpell(ward, pos.x, pos.z)
-		end
-	else
-		useR(Target)
 	end
 end
 
@@ -493,7 +558,7 @@ end
 function OnProcessSpell(obj, spell)
 	if obj.isMe and spell.name == "BlindMonkRKick" then
 		if CheckInsec() then
-			if Frdy then
+			if Frdy and Config.InSettings.flash then
 				local foo, foo2 = GetInsecFunc(1, Target)
 				CastSpell(flash, foo.x, foo.z)
 			end
@@ -503,6 +568,26 @@ function OnProcessSpell(obj, spell)
 	if obj.isMe and spell.name == "BlindMonkWOne" then Wtime = os.clock() end
 	if obj.isMe and spell.name == "BlindMonkEOne" then Etime = os.clock() end
 end
+
+function CheckInsec()
+	if ksr then
+		ksr = false
+		return false
+	end
+	if Config.SSettings.alwaysinsec then
+		return true
+	else
+		if Config.Insec then
+			if jumpkick then
+				JkickPos = nil
+				jumpkick = nil
+				return true
+			end
+			return true
+		end
+	end
+end
+
 
 function QoneCheck(targ)
 	local collision = nil
@@ -629,10 +714,6 @@ function getNearestTarget(unit, ally)
 			end
 		end
 	return closestMinion
-end
-
-function OnDraw()
-	DrawCircle(myHero.x, myHero.y, myHero.z, 700, ARGB(214,1,33,0))
 end
 
 function GetInsecFunc(ID, targ)
@@ -777,16 +858,6 @@ function GetVector(targ, dest, distance)
 	if distance == nil then distance = 150 end
 	local pos = Vector(targ.x - (vectorX * distance),y, targ.z - (vectorZ * distance))
 	return pos
-end
-
-function CheckInsec()
-	if Config.SSettings.alwaysinsec then
-		return true
-	else
-		if Config.Insec then
-			return true
-		end
-	end
 end
 
 function GetNearestTurret(targ)
