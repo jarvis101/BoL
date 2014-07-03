@@ -215,6 +215,7 @@ function Menu()
 	Config:addSubMenu("Skill Settings","SSettings")
 	Config.SSettings:addParam("Vpred","Use Vprediction", SCRIPT_PARAM_ONOFF, true)
 	Config.SSettings:addParam("Prod","Use Prodiction(VIP ONLY)", SCRIPT_PARAM_ONOFF, false)
+	Config.SSettings:addParam("Packet","Use Packets(VIP ONLY)", SCRIPT_PARAM_ONOFF, true)
 	Config.SSettings:addParam("CheckQCollisions","check for minion collision on Q", SCRIPT_PARAM_ONOFF, true)
 	Config.SSettings:addParam("smite","Smite minion collisions for Q", SCRIPT_PARAM_ONOFF, true)
 	Config.SSettings:addParam("alwaysinsec","always insec R", SCRIPT_PARAM_ONOFF, true)
@@ -898,13 +899,13 @@ end
 
 function useQ(targ)
 	if targ == nil then
-		if VIP_USER then
+		if VIP_USER and Config.SSettings.Packet then
 			Packet("S_CAST", {spellId = _Q}):send()
 		else
 			CastSpell(_Q)
 		end
 	else
-		if VIP_USER then
+		if VIP_USER and Config.SSettings.Packet then
 			Packet("S_CAST", {spellId = _Q, toX = targ.x, toY = targ.z , fromX = targ.x , fromY = targ.z }):send()
 		else
 			CastSpell(_Q, targ.x, targ.z)
@@ -916,7 +917,7 @@ function useW(targ)
 	if targ~=nil then 
 		CastSpell(_W, targ)	
 	else
-		if VIP_USER then
+		if VIP_USER and Config.SSettings.Packet then
 			Packet("S_CAST", {spellId = _W}):send()
 		else
 			CastSpell(_W)
@@ -925,7 +926,7 @@ function useW(targ)
 end
 
 function useE()
-	if VIP_USER then
+	if VIP_USER and Config.SSettings.Packet then
 		 Packet("S_CAST", {spellId = _E}):send()
 	else
 		CastSpell(_E)
@@ -933,7 +934,7 @@ function useE()
 end
 
 function useR(targ)
-	if VIP_USER then
+	if VIP_USER and Config.SSettings.Packet then
 		Packet("S_CAST", {spellId = _R, targetNetworkId = targ.networkID}):send()
 	else 
 		CastSpell(_R, targ)
