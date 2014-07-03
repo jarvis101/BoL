@@ -77,14 +77,14 @@ function checkitems()
 	wardR = nil
 	
 	if ward1R then ward = ward1
-	elseif ward2R then ward = ward2 wardR = ward2R
-	elseif ward3R then ward = ward3 wardR = ward3R
-	elseif ward4R then ward = ward4 wardR = ward4R
-	elseif ward5R then ward = ward5 wardR = ward5R
-	elseif ward6R then ward = ward6 wardR = ward6R
-	elseif ward7R then ward = ward7 wardR = ward7R
-	elseif ward8R then ward = ward8 wardR = ward8R
-	elseif ward9R then ward = ward9 wardR = ward9R	end
+	elseif ward2R then ward = ward2
+	elseif ward3R then ward = ward3
+	elseif ward4R then ward = ward4
+	elseif ward5R then ward = ward5
+	elseif ward6R then ward = ward6
+	elseif ward7R then ward = ward7
+	elseif ward8R then ward = ward8
+	elseif ward9R then ward = ward9	end
 	
 	Hydra = GetInventorySlotItem(3074)
 	RuinedKing = GetInventorySlotItem(3153)
@@ -169,7 +169,7 @@ function Menu()
 	Config:addParam("Harass","Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
 	Config:addParam("LaneClear","LaneClear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
 	Config:addParam("Mobile","Mobility", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
-	Config:addParam("Insec","Insec", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("B"))
+	Config:addParam("Insec","Insec", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
 	Config:addParam("WardJump","WardJump", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("T"))
 	
 	Config:addSubMenu("Skills", "SSettings")
@@ -525,21 +525,23 @@ function Insec()
 				Mobile(true,true)
 			end
 		else
-			if triedR == true then PrintChat("fail") triedR = false end
-			if JkickPos == nil then JkickPos = GetInsecFunc(1, Target)
-			else 
-				if Wrdy and myW.name == "BlindMonkWOne" then
-					if os.clock()-WardTime < 1 and os.clock()-WardTime > 0.001 then
-						jumpkick = true
-						useW(recentWard)
-					elseif ward ~= nil then
-						CastSpell(ward, pos.x, pos.z)
-					end
+			if JkickPos == nil then JkickPos = GetInsecFunc(1, Target) end
+			if Wrdy and myW.name == "BlindMonkWOne" and JkickPos ~= nil then					
+				if os.clock()-WardTime < 1 and os.clock()-WardTime > 0.001 then
+					JkickPos = nil
+					useW(recentWard)
+				elseif ward ~= nil then
+					if GetDistance(JkickPos, myHero) > 590 then	PrintChat("error with jkickpos") JkickPos = nil return end
+					PrintChat("should ward")
+					if JkickPos == nil then PrintChat("nil error") end
+					CastSpell(ward, JkickPos.x, JkickPos.z)
 				else
-					useR(Target)
+					PrintChat("Ward not ready, no ward placed")
 				end
+			elseif not Wrdy or myW.name ~= "BlindMonkWOne" then
+				useR(Target)
 			end
-		end	
+		end
 	end
 end
 
@@ -579,42 +581,10 @@ function CheckInsec()
 		return true
 	else
 		if Config.Insec then
-			if jumpkick then
-				JkickPos = nil
-				jumpkick = nil
 				return true
-			end
-			return true
 		end
 	end
-end
-
-
-function QoneCheck(targ)
-	local collision = nil
-	if targ.type == "obj_AI_Minion" and GetDistance(targ, myHero) < Qrange then useQ(targ) end
-	if Config.SSettings.CheckQCollisions then
-		local foo, foo2 = CheckMinionCollision(targ)
-		collision = foo
-		if foo2 and Config.SSettings.smite and smite ~= nil and GetDistance(foo2, myHero) < 750 then
-			if Srdy and SmiteDmg() > foo.health then
-				CastSpell(smite, foo)
-			end
-		end
-		if foo then return end
-	end
-	if Config.SSettings.Vpred and not Config.SSettings.Prod then
-		local foo, hit = Vpred(targ, true)
-		if hit == 2 or hit == 4 or hit == 5 then
-			if foo ~= nil and GetDistance (foo,myHero) < Qrange then
-				useQ(foo)
-			end
-		end
-	elseif Config.SSettings.Prod and not Config.SSettings.Vpred and VIP_USER then
-		if PQP ~= nil and GetDistance (PQP,myHero) < Qrange then useQ(PQP) end			
-	elseif GetDistance (targ,myHero) < Qrange then
-		useQ(targ)
-	end
+	return false
 end
 
 function QtwoCheck(targ)
@@ -954,10 +924,40 @@ function GetHitBox(minion)
 	return 50
 end
 
+function QoneCheck(targ)
+	local collision = nil
+	if targ.type == "obj_AI_Minion" and GetDistance(targ, myHero) < Qrange then useQ(targ) end
+	if Config.SSettings.CheckQCollisions and targ.type ~= "obj_AI_Minion" then
+		local foo, foo2 = CheckMinionCollision(targ)
+		if foo2 and foo2 ~= nil and Config.SSettings.smite and smite ~= nil and GetDistance(foo2, myHero) < 750 then
+			if Srdy and SmiteDmg() > foo.health then
+				CastSpell(smite, foo)
+			end
+		end
+		if foo2 then PrintChat("Collision") return end
+	end
+	if Config.SSettings.Vpred and not Config.SSettings.Prod then
+		local foo, hit = Vpred(targ, true)
+		if hit == 2 or hit == 4 or hit == 5 then
+			if foo ~= nil and GetDistance (foo,myHero) < Qrange then
+				useQ(foo)
+			end
+		end
+	elseif Config.SSettings.Prod and not Config.SSettings.Vpred and VIP_USER then
+		if PQP ~= nil and GetDistance (PQP,myHero) < Qrange then useQ(PQP) end			
+	elseif GetDistance (targ,myHero) < Qrange then
+		useQ(targ)
+	end
+end
+
 function CheckCollision(unit, minion, from)
-	local projection, pointline, isonsegment = VectorPointProjectionOnLineSegment(from, unit, Vector(minion.visionPos))
-	if isonsegment and (GetDistanceSqr(minion.visionPos, proj2) <= (GetHitBox(minion) + 60)^2) then
-		return true
+	if minion ~= nil and unit ~= nil and from ~= nil then
+		local projection, pointline, isonsegment = VectorPointProjectionOnLineSegment(from, unit, Vector(minion.visionPos))
+		if projection ~= nil and pointline ~= nil and isonsegment ~= nil then
+			if isonsegment and (GetDistanceSqr(minion.visionPos, projection) <= (GetHitBox(minion) + 70)^2) then
+				return true
+			end
+		end
 	end
 	return false
 end
