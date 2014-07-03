@@ -29,29 +29,29 @@ local JkickPos = nil
 local jumpkick = false
 local ksr = false
 
-local ward = nil
-local wardR = nil
+local ward
+local wardR 
 local WardTime = os.clock()
-local Hydra = nil
-local HydraR = nil
-local RuinedKing = nil
-local Omen = nil
-local Tiamat = nil
-local BilgeWaterCutlass = nil
-local Youmuu = nil
-local HydraR = nil
-local RuinedKingR = nil
-local OmenR = nil
-local TiamatR = nil
-local BilgeWaterCutlassR = nil
-local YoumuuR = nil
-local SwordofDivine = nil
+local Hydra
+local HydraR
+local RuinedKing 
+local Omen
+local Tiamat
+local BilgeWaterCutlass
+local Youmuu
+local HydraR 
+local RuinedKingR
+local OmenR
+local TiamatR 
+local BilgeWaterCutlassR
+local YoumuuR 
+local SwordofDivine 
 
-local JungleMinions = nil
-local Minions = nil
-local FleeJ = nil
-local FleeM = nil
-local AllyMin = nil
+local JungleMinions
+local Minions 
+local FleeJ 
+local FleeM 
+local AllyMin 
 
 function checkitems()
 	local ward1 = GetInventorySlotItem(2049)
@@ -74,7 +74,6 @@ function checkitems()
 	local ward9R = (ward8 ~= nil and myHero:CanUseSpell(ward8) == READY)
 	
 	ward = nil
-	wardR = nil
 	
 	if ward1R then ward = ward1
 	elseif ward2R then ward = ward2
@@ -225,6 +224,7 @@ function Menu()
 	Config.InSettings:addParam("jkick","Jump kick if flash unavailable(WIP)", SCRIPT_PARAM_ONOFF, true)
 	Config.InSettings:addParam("flash","Use Flash(WIP)", SCRIPT_PARAM_ONOFF, true)
 	Config.InSettings:addParam("mouse","Move to mouse(otherwise will move to target)", SCRIPT_PARAM_ONOFF, false)
+	Config.InSettings:addParam("col","Ignore Collision for insec", SCRIPT_PARAM_ONOFF, true)
 	
 	Config.InSettings:addSubMenu("Direction Settings", "Direct")
 	Config.InSettings.Direct:addParam("rand4", "Set to 7 to disable", SCRIPT_PARAM_INFO, "")
@@ -326,18 +326,20 @@ end
 function KS()
 	for i, enemy in pairs(EnemyTable) do 
 		if ValidTarget(enemy) then
-			if Config.KS.useQ and enemy.health < getDmg("Q", enemy, myHero) and GetDistance(enemy, myHero) < 1100 then
+			if Config.KS.useQ and Qrdy and enemy.health < getDmg("Q", enemy, myHero) and GetDistance(enemy, myHero) < 1100 then
 				QoneCheck(enemy)
 			end
-			if Config.KS.useE and enemy.health < getDmg("E", enemy, myHero) and GetDistance(enemy, myHero) < 400 then 
+			if Config.KS.useE and Erdy and enemy.health < getDmg("E", enemy, myHero) and GetDistance(enemy, myHero) < 400 then 
 				useW()
 			end
-			if Config.KS.useR and enemy.health < getDmg("R", enemy, myHero) and GetDistance(enemy, myHero) < 325 then
+			if Rrdy and Config.KS.useR and enemy.health < getDmg("R", enemy, myHero) and GetDistance(enemy, myHero) < 325 then
 				ksr = true
 				useR(enemy)
 			end
-			if Config.KS.useI and enemy.health < getDmg("IGNITE", enemy, myHero) and GetDistance(enemy, myHero) < 550 then
-				CastSpell(ignite, enemy)
+			if ignite ~= nil then
+				if Irdy and Config.KS.useI and enemy.health < getDmg("IGNITE", enemy, myHero) and GetDistance(enemy, myHero) < 550 then
+					CastSpell(ignite, enemy)
+				end
 			end
 		end
 	end
@@ -561,9 +563,11 @@ end
 function OnProcessSpell(obj, spell)
 	if obj.isMe and spell.name == "BlindMonkRKick" then
 		if CheckInsec() then
-			if Frdy and Config.InSettings.flash then
-				local foo, foo2 = GetInsecFunc(1, Target)
-				CastSpell(flash, foo.x, foo.z)
+			if flash ~= nil then
+				if Frdy and Config.InSettings.flash then
+					local foo, foo2 = GetInsecFunc(1, Target)
+					CastSpell(flash, foo.x, foo.z)
+				end
 			end
 		end
 	end
@@ -928,13 +932,15 @@ function QoneCheck(targ)
 	local collision = nil
 	if targ.type == "obj_AI_Minion" and GetDistance(targ, myHero) < Qrange then useQ(targ) end
 	if Config.SSettings.CheckQCollisions and targ.type ~= "obj_AI_Minion" then
-		local foo, foo2 = CheckMinionCollision(targ)
-		if foo2 and foo2 ~= nil and Config.SSettings.smite and smite ~= nil and GetDistance(foo2, myHero) < 750 then
-			if Srdy and SmiteDmg() > foo.health then
-				CastSpell(smite, foo)
+		if (not Config.InSettings.col and Config.Insec) then
+			local foo, foo2 = CheckMinionCollision(targ)
+			if foo2 and foo2 ~= nil and Config.SSettings.smite and smite ~= nil and GetDistance(foo2, myHero) < 750 then
+				if Srdy and SmiteDmg() > foo.health then
+					CastSpell(smite, foo)
+				end
 			end
+			if foo2 then PrintChat("Collision") return end
 		end
-		if foo2 then PrintChat("Collision") return end
 	end
 	if Config.SSettings.Vpred and not Config.SSettings.Prod then
 		local foo, hit = Vpred(targ, true)
