@@ -179,6 +179,7 @@ function Menu()
 	Config.CSettings:addParam("useW","Use 1st W to chase/position", SCRIPT_PARAM_ONOFF, false)
 	Config.CSettings:addParam("useE","Use 1st E in combo", SCRIPT_PARAM_ONOFF, true)
 	Config.CSettings:addParam("useR","Use R in combo", SCRIPT_PARAM_ONOFF, true)
+	Config.CSettings:addParam("Rthree","only use R hits >2 ppl(WIP)", SCRIPT_PARAM_ONOFF, false)
 	Config.CSettings:addSubMenu("Damage Settings","delay")
 	Config.CSettings.delay:addParam("useQ","use 2nd Q in combo", SCRIPT_PARAM_ONOFF, true)
 	Config.CSettings.delay:addParam("useW","use 2nd W in combo", SCRIPT_PARAM_ONOFF, true)
@@ -332,7 +333,7 @@ function KS()
 			if Config.KS.useE and Erdy and enemy.health < getDmg("E", enemy, myHero) and GetDistance(enemy, myHero) < 400 then 
 				useW()
 			end
-			if Rrdy and Config.KS.useR and enemy.health < getDmg("R", enemy, myHero) and GetDistance(enemy, myHero) < 325 then
+			if Rrdy and Config.KS.useR and enemy.health < getDmg("R", enemy, myHero) and GetDistance(enemy, myHero) < 300 then
 				ksr = true
 				useR(enemy)
 			end
@@ -367,7 +368,17 @@ function Combo()
 		EtwoCheck(Target)
 	end
 	if Rrdy and Config.CSettings.useR then
-		Rcheck(Target)
+		if Config.CSettings.Rthree then
+			if GetDistance(Target) < 325 then 
+				if Config.CSettings.Rthree then
+					local foo = CheckUltCollision(Target)
+					if foo then useR(Target) end
+				end
+				if Config.CSettings.Rthree == false then
+					useR(Target)
+				end
+			end
+		end
 	end
 	if Qrdy and Config.CSettings.delay.useQ and myQ.name ~= "BlindMonkQOne" then
 		if TargetHaveBuff("blindmonkpassive_cosmetic", myHero) and Config.CSettings.delay.delayQ and os.clock() and GetDistance(Target, myHero) < 250 then return end
@@ -459,7 +470,7 @@ function WJ()
 		if os.clock()-WardTime < 1 and os.clock()-WardTime > 0.001 then
 			useW(recentWard)
 		else
-			if wardR then
+			if ward ~= nil then
 				if GetDistance(mousePos, myHero) < 590 then
 					CastSpell(ward, mousePos.x, mousePos.z)
 				else 
@@ -534,13 +545,10 @@ function Insec()
 					useW(recentWard)
 				elseif ward ~= nil then
 					if GetDistance(JkickPos, myHero) > 590 then	PrintChat("error with jkickpos") JkickPos = nil return end
-					PrintChat("should ward")
 					if JkickPos == nil then PrintChat("nil error") end
 					CastSpell(ward, JkickPos.x, JkickPos.z)
-				else
-					PrintChat("Ward not ready, no ward placed")
 				end
-			elseif not Wrdy or myW.name ~= "BlindMonkWOne" then
+			elseif not Wrdy or myW.name ~= "BlindMonkWOne" and Rrdy then
 				useR(Target)
 			end
 		end
@@ -818,7 +826,7 @@ function getAlly(Prior, targ)
 			end
 		end
 	end
-	if Prior ~= 4 then return getAlly(Prior + 1, targ) end
+	if Prior < 4 then return getAlly(Prior + 1, targ) else return nil end
 end
 
 function GetReverseVector(targ, dest, distance)
@@ -931,16 +939,14 @@ end
 function QoneCheck(targ)
 	local collision = nil
 	if targ.type == "obj_AI_Minion" and GetDistance(targ, myHero) < Qrange then useQ(targ) end
-	if Config.SSettings.CheckQCollisions and targ.type ~= "obj_AI_Minion" then
-		if (not Config.InSettings.col and Config.Insec) then
-			local foo, foo2 = CheckMinionCollision(targ)
-			if foo2 and foo2 ~= nil and Config.SSettings.smite and smite ~= nil and GetDistance(foo2, myHero) < 750 then
-				if Srdy and SmiteDmg() > foo.health then
-					CastSpell(smite, foo)
-				end
+	if Config.SSettings.CheckQCollisions and targ.type ~= "obj_AI_Minion" and (not Config.InSettings.col and Config.Insec) then
+		local foo, foo2 = CheckMinionCollision(targ)
+		if foo2 and foo ~= nil and Config.SSettings.smite and smite ~= nil and GetDistance(foo2, myHero) < 750 then
+			if Srdy and SmiteDmg() > foo.health then
+				CastSpell(smite, foo)
 			end
-			if foo2 then PrintChat("Collision") return end
 		end
+		if foo2 then return end
 	end
 	if Config.SSettings.Vpred and not Config.SSettings.Prod then
 		local foo, hit = Vpred(targ, true)
@@ -956,11 +962,11 @@ function QoneCheck(targ)
 	end
 end
 
-function CheckCollision(unit, minion, from)
-	if minion ~= nil and unit ~= nil and from ~= nil then
-		local projection, pointline, isonsegment = VectorPointProjectionOnLineSegment(from, unit, Vector(minion.visionPos))
+function CheckCollision(unit, targ, from)
+	if targ ~= nil and unit ~= nil and from ~= nil then
+		local projection, pointline, isonsegment = VectorPointProjectionOnLineSegment(from, targ, Vector(targ.visionPos))
 		if projection ~= nil and pointline ~= nil and isonsegment ~= nil then
-			if isonsegment and (GetDistanceSqr(minion.visionPos, projection) <= (GetHitBox(minion) + 70)^2) then
+			if isonsegment and (GetDistanceSqr(targ.visionPos, projection) <= (GetHitBox(targ) + 70)^2) then
 				return true
 			end
 		end
@@ -980,10 +986,23 @@ function CheckMinionCollision(targ)
 			end
 		end
 		for i, minion in ipairs(JungleMinions.objects) do
-			if CheckCollision(unit, minion, from) then
+			if CheckCollision(targ, minion, from) then
 				return minion, true
 			end
 		end
+end
+
+function CheckUltCollision(targ)
+	local vectorX,y,vectorZ = (Vector(myHero) - Vector(targ)):normalized():unpack()
+	local pos = Vector(targ.x - (vectorX * 1200),y, targ.z - (vectorZ * 1200))
+	local hits = 1
+	for i, enemy in pairs(EnemyTable) do
+		local projection, pointline, isonsegment = VectorPointProjectionOnLineSegment(myHero.visionPos, pos, pos)
+		if isonsegment and (GetDistanceSqr(targ.visionPos, projection) <= (70 + 70)^2) then
+			hits = hits + 1
+		end
+	end
+	if hits > 2 then return true else return false end
 end
 
 function SmiteDmg()
