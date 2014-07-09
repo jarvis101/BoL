@@ -1,4 +1,4 @@
-local version = "1.46"
+local version = "1.47"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -114,8 +114,7 @@ function Menu()
 	JTrist:addSubMenu("Skill Settings", "SSettings")
 	JTrist.SSettings:addSubMenu("W Settings", "WSettings")
 	JTrist.SSettings.WSettings:addParam("Vpred", "Use Vprediction for W", SCRIPT_PARAM_ONOFF, true)
-	JTrist.SSettings.WSettings:addParam("Prod", "use Prodiction for W(VIP)", SCRIPT_PARAM_ONOFF, false)
-	JTrist.SSettings.WSettings:addParam("Packet", "use packets for skills", SCRIPT_PARAM_ONOFF, true)
+	JTrist.SSettings.WSettings:addParam("Prod", "(not working)", SCRIPT_PARAM_ONOFF, false)
 	JTrist.SSettings.WSettings:addParam("Ak", "Don't use W if more than #", SCRIPT_PARAM_INFO, "")
 	JTrist.SSettings.WSettings:addParam("safeW", "enemies around", SCRIPT_PARAM_SLICE, 4, 1, 4, 0)
 	JTrist.SSettings.WSettings:addParam("safeWrange", "Safety Distance", SCRIPT_PARAM_SLICE, 1000, 500 , 2000, 0)
@@ -422,7 +421,7 @@ function OnCreateObj(object)
 end
 
 function castQ()
-	if VIP_USER and JTrist.SSettings.Packet then
+	if VIP_USER then
 		Packet("S_CAST", {spellId = _Q}):send()
 	else
 		CastSpell(_Q)
@@ -430,7 +429,7 @@ function castQ()
 end
 
 function castW(targ)
-	if VIP_USER and JTrist.SSettings.Packet then
+	if VIP_USER then
 		Packet('S_CAST', { spellId = _W, toX = targ.x, toY = targ.z , fromX = targ.x , fromY = targ.z }):send()	
 	else
 		CastSpell(_W, targ.x, targ.z)
@@ -438,7 +437,7 @@ function castW(targ)
 end
 
 function castE(targ)
-	if VIP_USER and JTrist.SSettings.Packet then
+	if VIP_USER then
 		Packet("S_CAST", {spellId = _E, targetNetworkId = targ.networkID}):send()
 	else
 		CastSpell(_E, targ)
@@ -446,7 +445,7 @@ function castE(targ)
 end
 
 function castR(targ)
-	if VIP_USER and JTrist.SSettings.Packet then
+	if VIP_USER then
 		Packet("S_CAST", {spellId = _R, targetNetworkId = targ.networkID}):send()
 	else
 		CastSpell(_R, targ)
@@ -547,12 +546,12 @@ function analyzeCombat(targ)
 		Cdmg = ((Wdmg + Edmg + Rdmg)*1.2)
 		if Lichdmg ~= nil then Cdmg = Cdmg + Lichdmg end
 		if dfgdmg ~= nil then Cdmg = Cdmg + dfgdmg end
-		if hexTechdmg ~= nil then Cdmg = Cdmg + hexTechdmg end
+		if HexTechdmg ~= nil then Cdmg = Cdmg + HexTechdmg end
 		if Blgdmg ~= nil then Cdmg = Cdmg + Blgdmg end
 	else
 		Cdmg = Wdmg + Edmg + Rdmg
 		if Lichdmg ~= nil then Cdmg = Cdmg + Lichdmg end
-		if HexTechdmg ~= nil then Cdmg = Cdmg + hexTechdmg end
+		if HexTechdmg ~= nil then Cdmg = Cdmg + HexTechdmg end
 		if Blgdmg ~= nil then Cdmg = Cdmg + Blgdmg end		
 	end
 	
