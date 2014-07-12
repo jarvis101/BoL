@@ -1153,16 +1153,17 @@ function CheckMinionCollision(targ)
 	JungleMinions:update()
 	
 	local result = false
-		for i, minion in ipairs(Minions.objects) do
-			if CheckCollision(targ, minion) then
-				return minion, true
-			end
+	for i, minion in ipairs(Minions.objects) do
+		if CheckCollision(targ, minion) then
+			return minion, true
 		end
-		for i, minion in ipairs(JungleMinions.objects) do
-			if CheckCollision(targ, minion) then
-				return minion, true
-			end
+	end
+	for i, minion in ipairs(JungleMinions.objects) do
+		if CheckCollision(targ, minion) then
+			return minion, true
 		end
+	end
+	return nil, false
 end
 
 function CheckUltCollision(targ)
