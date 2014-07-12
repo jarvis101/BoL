@@ -51,7 +51,89 @@ local JungleMinions
 local Minions 
 local FleeJ 
 local FleeM 
-local AllyMin 
+local AllyMin
+
+local wardPoints
+
+function init_tables()
+	wardPoints = {
+		--{ x =  10600.58, y = 69.96, z = 2037.02 },
+		--{ x =  11102.92, y = -70.54, z = 2615.42 },
+		p1 = {
+			{ x =  5370.155, y = 54.80, z = 7504.09 },
+			{ x =  8301.40, y = -65.47, z = 6500.795 },
+			{ x =  2333.93, y = 108.23, z = 4316.03 },
+			{ x =  4182.96, y = 109.439, z = 2503.61 },
+			{ x =  4969.88, y = 54.41, z = 2376.66 },
+			{ x =  5797.31, y = 53.02, z = 3470.74 },
+			{ x =  7634.12, y = 56.86, z = 3887.32 },
+			{ x =  7357.33, y = 56.915, z = 4075.35 },
+			{ x =  6502.56, y = 61.03, z = 5366.69 },
+			{ x =  7967.31, y = 55.097, z = 2997.25 },
+			{ x =  9321.02, y = 66.03, z = 2870.20 },
+			{ x =  8840.28, y = 60.97, z = 3570.637 },
+			{ x =  10073.69, y = 49.39, z = 3364.71 },
+			{ x =  6858.46, y = 52.59, z = 1464.09 },
+			{ x =  9953.51, y = 69.18, z = 2029.57 },
+			{ x =  3377.52, y = 55.65, z = 5524.49 },
+			{ x =  3283.23, y = 55.56, z = 5057.66 },
+			{ x =  8700.68, y = 54.44, z = 4619.40 },
+			
+		},
+		
+		p2 = {
+			{ x =  5771.72, y = -54.70, z = 7908.60 },
+			{ x =  8550.15, y = 56.20, z = 6867.02 },
+			{ x =  2368.46, y = 56.20, z = 4896.56 },
+			{ x =  4604.18, y = 54.28, z = 2551.77 },
+			{ x =  5511.51, y = 55.29, z = 2324.30 },
+			{ x =  6240.17, y = 51.67, z = 3712.23 },
+			{ x =  8199.14, y = 55.37, z = 3926.97 },
+			{ x =  7384.68, y = 53.34, z = 4539.62 },
+			{ x =  6681.84, y = 55.597, z = 5876.46 },
+			{ x =  8031.159, y = 54.276, z = 2632.80 },
+			{ x =  9195.29, y = 67.835, z = 2473.39 },
+			{ x =  9182.98, y = -63.26, z = 3942.33 },
+			{ x =  9850.75, y = -60.35, z = 3950.40 },
+			{ x =  7071.21, y = 54.39, z = 1908.33 },
+			{ x =  9872.03, y = 52.98, z = 1562.07 },
+			{ x =  3043.24, y = 57.10, z = 5041.53 },
+			{ x =  3497.89, y = 55.65, z = 5545.92 },
+			{ x =  9114.60, y = -60.31, z = 4550.98 },
+		}
+	}
+	
+	WPspecial = {
+		16,
+		17,
+	}
+end
+
+function OnDraw()
+	if Config.Draw.Qrange then 
+		DrawCircle(myHero.x, myHero.y, myHero.z, 1100, ARGB(214,66,33,33))
+	end
+	if Config.Draw.Wrange then 
+		DrawCircle(myHero.x, myHero.y, myHero.z, Wrange, ARGB(214,1,33,33))
+	end
+	if Config.Draw.Erange then 
+		DrawCircle(myHero.x, myHero.y, myHero.z, Erange, ARGB(214,66,33,33))
+	end
+	if Config.Draw.Rrange then 
+		DrawCircle(myHero.x, myHero.y, myHero.z, Rrange, ARGB(214,255,0,0))
+	end
+	if Config.Draw.WJrange then 
+		DrawCircle(myHero.x, myHero.y, myHero.z, 600, ARGB(214,1,1,33))
+	end
+	if Config.Draw.Jumps then
+		for i,point in pairs(wardPoints.p1) do
+			DrawCircle(point.x, point.y, point.z, 100, ARGB(214, 1,255,1))
+		end
+		for i,point in pairs(wardPoints.p2) do
+			DrawCircle(point.x, point.y, point.z, 100, ARGB(214, 1,1,255))
+		end
+	end
+end
 
 function checkitems()
 	local ward1 = GetInventorySlotItem(2049)
@@ -126,7 +208,7 @@ function OnLoad()
 	SOWi:RegisterAfterAttackCallback(AutoAttackRese)
 	if VIP_USER then
 		Prod = ProdictManager.GetInstance()
-		ProdQ = Prod:AddProdictionObject(_Q, 1100, 1800, 0.250, 70)
+		ProdQ = Prod:AddProdictionObject(_Q, 1000, 1800, 0.250, 70)
 	end
 	ts = TargetSelector(TARGET_NEAR_MOUSE, 1300, DAMAGE_PHYSICAL)	
 	ts.name = "Target"
@@ -159,12 +241,14 @@ function OnLoad()
 	else 
 		flash = nil
 	end
+	init_tables()
 end
 
 function Menu()
 	Config = scriptConfig("OP Lee", "Config")
 	
 	Config:addParam("Combo","Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+	Config:addParam("Debug","Debug", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("P"))
 	Config:addParam("Harass","Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
 	Config:addParam("LaneClear","LaneClear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
 	Config:addParam("Mobile","Mobility", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
@@ -216,8 +300,8 @@ function Menu()
 	Config.SSettings:addParam("Vpred","Use Vprediction", SCRIPT_PARAM_ONOFF, true)
 	Config.SSettings:addParam("Prod","Use Prodiction(VIP ONLY)", SCRIPT_PARAM_ONOFF, false)
 	Config.SSettings:addParam("Packet","Use Packets(VIP ONLY)", SCRIPT_PARAM_ONOFF, true)
-	Config.SSettings:addParam("CheckQCollisions","check for minion collision on Q", SCRIPT_PARAM_ONOFF, true)
-	Config.SSettings:addParam("smite","Smite minion collisions for Q", SCRIPT_PARAM_ONOFF, true)
+	Config.SSettings:addParam("CheckQCollisions","check for minion collision on Q", SCRIPT_PARAM_ONOFF, false)
+	Config.SSettings:addParam("smite","Smite minion collisions for Q", SCRIPT_PARAM_ONOFF, false)
 	Config.SSettings:addParam("alwaysinsec","always insec R", SCRIPT_PARAM_ONOFF, true)
 	
 	
@@ -226,6 +310,12 @@ function Menu()
 	Config.InSettings:addParam("flash","Use Flash(WIP)", SCRIPT_PARAM_ONOFF, true)
 	Config.InSettings:addParam("mouse","Move to mouse(otherwise will move to target)", SCRIPT_PARAM_ONOFF, false)
 	Config.InSettings:addParam("col","Ignore Collision for insec", SCRIPT_PARAM_ONOFF, true)
+	
+	Config:addSubMenu("Mobile Settings", "MSettings")
+	Config.MSettings:addParam("rand6", "Only one can be on, or will", SCRIPT_PARAM_INFO, "")
+	Config.MSettings:addParam("rand6", "default to jump spots only", SCRIPT_PARAM_INFO, "")
+	Config.MSettings:addParam("WJloc", "Only jump from jump spots", SCRIPT_PARAM_ONOFF, true)
+	Config.MSettings:addParam("WJperm", "Jump on W CD", SCRIPT_PARAM_ONOFF, false)
 	
 	Config.InSettings:addSubMenu("Direction Settings", "Direct")
 	Config.InSettings.Direct:addParam("rand4", "Set to 7 to disable", SCRIPT_PARAM_INFO, "")
@@ -270,6 +360,7 @@ function Menu()
 	Config.Draw:addParam("Erange","Draw E range", SCRIPT_PARAM_ONOFF, true)
 	Config.Draw:addParam("Rrange","Draw R range", SCRIPT_PARAM_ONOFF, true)
 	Config.Draw:addParam("WJrange","Draw Ward Jump range", SCRIPT_PARAM_ONOFF, true)
+	Config.Draw:addParam("Jumps","Draw jump spots", SCRIPT_PARAM_ONOFF, true)
 	
 	Config:addSubMenu("Orbwalker", "SOWiorb")
 	SOWi:LoadToMenu(Config.SOWiorb)
@@ -304,25 +395,10 @@ function OnTick()
 	if Config.LaneClear then LaneClear() end
 	if Config.Mobile then Mobile() end
 	if Config.WardJump then WJ() end
+	if Config.Debug then Debug() end
 end
 
-function OnDraw()
-	if Config.Draw.Qrange then 
-		DrawCircle(myHero.x, myHero.y, myHero.z, 1100, ARGB(214,66,33,33))
-	end
-	if Config.Draw.Wrange then 
-		DrawCircle(myHero.x, myHero.y, myHero.z, Wrange, ARGB(214,1,33,33))
-	end
-	if Config.Draw.Erange then 
-		DrawCircle(myHero.x, myHero.y, myHero.z, Erange, ARGB(214,66,33,33))
-	end
-	if Config.Draw.Rrange then 
-		DrawCircle(myHero.x, myHero.y, myHero.z, Rrange, ARGB(214,255,0,0))
-	end
-	if Config.Draw.WJrange then 
-		DrawCircle(myHero.x, myHero.y, myHero.z, 590, ARGB(214,1,1,33))
-	end
-end
+
 
 function KS()
 	for i, enemy in pairs(EnemyTable) do 
@@ -482,23 +558,67 @@ function WJ()
 	end
 end
 
-function Mobile(isInsec, noward)
-	if noward == nil then
-		if Wrdy and myW.name == "BlindMonkWOne" then
-			if os.clock()-WardTime < 1 and os.clock()-WardTime > 0.001 then
-				useW(recentWard)
+function SWJ(pos)
+	if Wrdy and myW.name == "BlindMonkWOne" then
+		if os.clock()-WardTime < 1 and os.clock()-WardTime > 0.001 then
+			useW(recentWard)
+		else
+			if ward ~= nil then
+				if pos ~= nil then
+					CastSpell(ward, pos.x, pos.z)
+				end
+			end
+		end
+	end
+end
+
+function SWJcheck(id, pval)
+	PrintChat(tostring(id))
+	for i, foo in pairs(WPspecial) do
+		if foo == id and pval ~= nil then
+			if pval == 1 then
+				if GetDistance(wardPoints.p1[id]) < 50 then
+					return GetReverseVector(wardPoints.p2[id], wardPoints.p1[id], 100)
+				end
+			elseif pval == 2 then
+				if GetDistance(wardPoints.p2[id]) < 50 then
+					return GetReverseVector(wardPoints.p1[id], wardPoints.p2[id], 100)
+				end
 			else
-				if ward ~= nil then
-					if GetDistance(mousePos, myHero) < 590 then
-						CastSpell(ward, mousePos.x, mousePos.z)
-					else 
-						local pos = GetReverseVector(myHero, mousePos, 600)
-						if pos ~= nil then CastSpell(ward, pos.x, pos.z) end
+				PrintChat("Error on determining ward placement position --- WJ01")
+			end
+		end
+	end
+	return nil
+end
+
+function Mobile(isInsec, noward)
+	if Config.MSettings.WJperm and not Config.MSettings.WJloc then 
+		if Wrdy and myW.name == "BlindMonkWOne" then
+			WJ()
+		end
+	elseif Config.MSettings.WJloc then 
+		if Wrdy and myW.name == "BlindMonkWOne" then
+			
+			for i, pos in pairs(wardPoints.p1) do
+				if GetDistance(pos, myHero) < 100 then
+					local foo = SWJcheck(i, 1)
+					if foo ~= nil then
+						PrintChat("gotthisfar123123")
+						SWJ(foo)
+					else
+						SWJ(wardPoints.p2[i])
 					end
-				else
-					local foo2 = getNearestTarget(mousePos, true)
-					if foo2 ~= nil then
-						if GetDistance(foo2, myHero) < 700 then useW(foo2) end
+				end
+			end
+			for i, pos in pairs(wardPoints.p2) do
+				if GetDistance(pos, myHero) < 100 then
+					local foo = SWJcheck(i, 2)
+					if foo ~= nil then
+						PrintChat("gotthisfar123213")
+						SWJ(foo)
+					else
+						SWJ(wardPoints.p1[i])
 					end
 				end
 			end
@@ -519,9 +639,12 @@ function Mobile(isInsec, noward)
 	end
 end
 
+
+
+
 function Insec()
 	if (Frdy and Rrdy and Config.InSettings.flash) then
-		if GetDistance(Target, myHero) > 300 then
+		if GetDistance(Target, myHero) > 350 then
 			if Config.InSettings.mouse then
 				Mobile(nil, nil)
 			else
@@ -584,6 +707,10 @@ function OnProcessSpell(obj, spell)
 	if obj.isMe and spell.name == "BlindMonkEOne" then Etime = os.clock() end
 end
 
+function InsecLogic(flash)
+		
+end
+
 function CheckInsec()
 	if ksr then
 		ksr = false
@@ -626,11 +753,10 @@ function Rcheck(targ)
 end
 
 function Debug()
-	for i = 1, 4000 do
-		local item = GetInventorySlotItem(i)
-		local itemR = (item ~= nil and myHero:CanUseSpell(item))
-		if itemR then PrintChat(tostring(i)) end
-	end
+	PrintChat(tostring(mousePos.x))
+	PrintChat(tostring(mousePos.y))
+	PrintChat(tostring(mousePos.z))
+	Config.Debug = false
 end
 
 function getNearestTarget(unit, ally)
@@ -861,7 +987,7 @@ function Vpred(targ, isQ)
 	local CastPosition = nil
 	local HitChance = nil
 	if isQ then
-		CastPosition, HitChance = VP:GetLineCastPosition(targ, 0.250, 70, 1100, 1800)
+		CastPosition, HitChance = VP:GetLineCastPosition(targ, 0.250, 70, 1000, 1800)
 		return CastPosition, HitChance
 	end
 	if not isQ then
@@ -936,6 +1062,7 @@ function GetHitBox(minion)
 	return 50
 end
 
+--[[
 function QoneCheck(targ)
 	local collision = nil
 	if targ.type == "obj_AI_Minion" and GetDistance(targ, myHero) < Qrange then useQ(targ) end
@@ -961,10 +1088,59 @@ function QoneCheck(targ)
 		useQ(targ)
 	end
 end
+]]--
+function QoneCheck(targ)
+	local hit
+	local pos
+	local useq = false
+	if targ.type == "obj_AI_Minion" and GetDistance(targ, myHero) < Qrange then useQ(targ) end
+	if Config.SSettings.Vpred and not Config.SSettings.Prod then
+		pos, hit = Vpred(targ,true)
+		if (hit == 2 or hit == 4 or hit == 5) and pos ~= nil then
+			useq = true
+		end
+	elseif Config.SSettings.Prod and not Config.SSettings.Vpred then
+		if PQP ~= nil and GetDistance(PQP, myHero) < Qrange then 
+			pos = PQP 
+			useq = true 
+		end
+	elseif GetDistance(targ, myHero) then
+		pos = targ
+		useq = true
+	end
+	
+	
+	if Config.SSettings.CheckQCollisions and targ.type ~= "obj_AI_Minion" then
+		PrintChat("Checking for collision")
+		if Config.Insec then
+			if not Config.InSettings.col then
+				useq = handle_Col(CheckMinionCollision(pos))
+			end
+		else
+			useq = handle_Col(CheckMinionCollision(pos))
+		end
+	end
+	if useq then
+		useQ(pos)
+	end
+end
 
-function CheckCollision(unit, targ, from)
-	if targ ~= nil and unit ~= nil and from ~= nil then
-		local projection, pointline, isonsegment = VectorPointProjectionOnLineSegment(from, targ, Vector(targ.visionPos))
+function handle_Col(minion, istrue)
+	if not istrue then PrintChat("Col is "..tostring(istrue)) return true
+	else
+		PrintChat(tostring(minion.health).." and col = "..tostring(istrue))
+		if minion ~= nil and Config.SSettings.smite and smite ~= nil and GetDistance(minion, myHero) < 750 then
+			if Srdy and SmiteDmg() > minion.health then
+				CastSpell(smite, minion)
+			end
+		end
+		return false
+	end
+end
+
+function CheckCollision(unit, targ)
+	if targ ~= nil and unit ~= nil then
+		local projection, pointline, isonsegment = VectorPointProjectionOnLineSegment(myHero.visionPos, targ, Vector(targ.visionPos))
 		if projection ~= nil and pointline ~= nil and isonsegment ~= nil then
 			if isonsegment and (GetDistanceSqr(targ.visionPos, projection) <= (GetHitBox(targ) + 70)^2) then
 				return true
@@ -977,16 +1153,15 @@ end
 function CheckMinionCollision(targ)
 	Minions:update()
 	JungleMinions:update()
-	from = myHero.visionPos
 	
 	local result = false
 		for i, minion in ipairs(Minions.objects) do
-			if CheckCollision(targ, minion, from) then
+			if CheckCollision(targ, minion) then
 				return minion, true
 			end
 		end
 		for i, minion in ipairs(JungleMinions.objects) do
-			if CheckCollision(targ, minion, from) then
+			if CheckCollision(targ, minion) then
 				return minion, true
 			end
 		end
