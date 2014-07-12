@@ -604,7 +604,6 @@ function Mobile(isInsec, noward)
 				if GetDistance(pos, myHero) < 100 then
 					local foo = SWJcheck(i, 1)
 					if foo ~= nil then
-						PrintChat("gotthisfar123123")
 						SWJ(foo)
 					else
 						SWJ(wardPoints.p2[i])
@@ -615,7 +614,6 @@ function Mobile(isInsec, noward)
 				if GetDistance(pos, myHero) < 100 then
 					local foo = SWJcheck(i, 2)
 					if foo ~= nil then
-						PrintChat("gotthisfar123213")
 						SWJ(foo)
 					else
 						SWJ(wardPoints.p1[i])
