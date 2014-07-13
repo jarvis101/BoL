@@ -1,4 +1,4 @@
-local version = "2.07"
+local version = "2.08"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JAkali"
@@ -315,7 +315,6 @@ function Combo(targ)
 			
 			if AkMen.CSettings.CuseRchase then
 				if ((Target.health/Target.maxHealth)*100) < AkMen.CSettings.CuseRchaseHP and GetDistance(Target) > AkMen.CSettings.CuseRchaseDistance and GetDistance(Target, myHero) < 800 then
-					PrintChat("trying to r")
 					useR(targ)
 				end
 			else
