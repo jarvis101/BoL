@@ -147,6 +147,20 @@ function init_tables()
 			["Worm"] = 100.0,
 
 	}
+	
+	wardID = {
+		3205,
+		3207,
+		2049,
+		2045,
+		3340,
+		2044,
+		3361,
+		3362,
+		3154,
+		3160,
+		3340
+	}
 end
 
 function OnDraw()
@@ -176,37 +190,18 @@ function OnDraw()
 	if mdraw ~= nil and mdraw ~= 0 then DrawCircle(mdraw.x, mdraw.y, mdraw.z, 100, ARGB(200, 255,255,255)) end
 end
 
-function checkitems()
-	local ward1 = GetInventorySlotItem(2049)
-	local ward1R = (ward1 ~= nil and myHero:CanUseSpell(ward1) == READY)
-	local ward2 = GetInventorySlotItem(2045)
-	local ward2R = (ward2 ~= nil and myHero:CanUseSpell(ward2) == READY)
-	local ward3 = GetInventorySlotItem(3340)
-	local ward3R = (ward3 ~= nil and myHero:CanUseSpell(ward3) == READY)
-	local ward4 = GetInventorySlotItem(2044)
-	local ward4R = (ward4 ~= nil and myHero:CanUseSpell(ward4) == READY)
-	local ward5 = GetInventorySlotItem(3361)
-	local ward5R = (ward5 ~= nil and myHero:CanUseSpell(ward5) == READY)
-	local ward6 = GetInventorySlotItem(3362)
-	local ward6R = (ward6 ~= nil and myHero:CanUseSpell(ward6) == READY)
-	local ward7 = GetInventorySlotItem(3154)
-	local ward7R = (ward7 ~= nil and myHero:CanUseSpell(ward7) == READY)
-	local ward8 = GetInventorySlotItem(3160)
-	local ward8R = (ward8 ~= nil and myHero:CanUseSpell(ward8) == READY)
-	local ward9 = GetInventorySlotItem(3340)
-	local ward9R = (ward8 ~= nil and myHero:CanUseSpell(ward8) == READY)
-	
+function checkitems()	
+
 	ward = nil
 	
-	if ward1R then ward = ward1
-	elseif ward2R then ward = ward2
-	elseif ward3R then ward = ward3
-	elseif ward4R then ward = ward4
-	elseif ward5R then ward = ward5
-	elseif ward6R then ward = ward6
-	elseif ward7R then ward = ward7
-	elseif ward8R then ward = ward8
-	elseif ward9R then ward = ward9	end
+	for i, num in pairs(wardID) do
+		local foo = GetInventorySlotItem(num)
+		local fooR = (foo ~= nil and myHero:CanUseSpell(foo) == READY)
+		if fooR then
+			ward = foo
+			break
+		end
+	end
 	
 	Hydra = GetInventorySlotItem(3074)
 	RuinedKing = GetInventorySlotItem(3153)
@@ -614,7 +609,6 @@ function SWJ(pos)
 end
 
 function SWJcheck(id, pval)
-	PrintChat(tostring(id))
 	for i, foo in pairs(WPspecial) do
 		if foo == id and pval ~= nil then
 			if pval == 1 then
@@ -795,9 +789,17 @@ function Rcheck(targ)
 end
 
 function Debug()
+	--[[
 	PrintChat(tostring(mousePos.x))
 	PrintChat(tostring(mousePos.y))
 	PrintChat(tostring(mousePos.z))
+	]]--
+	for i = 1, 4000 do
+		local foo = GetInventorySlotItem(i)
+		local havefoo = (foo ~= nil and myHero:CanUseSpell(foo))
+		if havefoo then PrintChat(tostring(i)) end
+	end
+	
 	Config.Debug = false
 end
 
@@ -1186,14 +1188,11 @@ end
 
 function handle_Col(minion, col)
 	if col then
-		PrintChat(tostring(minion.health).." and col = "..tostring(istrue))
 		if minion ~= nil and Config.SSettings.smite and smite ~= nil and GetDistance(minion, myHero) < 750 then
 			if Srdy and SmiteDmg() > minion.health then
 				CastSpell(smite, minion)
 			end
 		end
-	else
-		PrintChat("Col is "..tostring(col))
 	end
 end
 
@@ -1201,7 +1200,6 @@ function CheckCollision(unit, targ)
 	if targ ~= nil and unit ~= nil then
 		local projection, pointline, isonsegment = VectorPointProjectionOnLineSegment(Vector(myHero), targ, Vector(unit))
 		if projection ~= nil and pointline ~= nil and isonsegment ~= nil then
-			PrintChat("called")
 			if isonsegment and (GetDistanceSqr(unit, projection) <= (GetHitBox(unit) + 75)^2) then
 				return true
 			end
