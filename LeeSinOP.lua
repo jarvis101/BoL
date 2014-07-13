@@ -54,6 +54,10 @@ local FleeM
 local AllyMin
 
 local wardPoints
+local WPspecial
+local hitBoxes
+
+local mdraw
 
 function init_tables()
 	wardPoints = {
@@ -107,6 +111,42 @@ function init_tables()
 		16,
 		17,
 	}
+	
+	hitBoxes = {
+
+			["Red_Minion_MechRange"] = 65.0, 
+			["Blue_Minion_MechMelee"] = 65, 
+			["MonkeyKingClone"] = 65, 
+			["Red_Minion_MechCannon"] = 65.0, 
+			["Blue_Minion_MechCannon"] = 65.0, 
+			["Red_Minion_MechMelee"] = 65.0,
+			["Blue_Minion_MechMelee"] = 65.0,
+			["ShacoBox"] = 10,
+			["Red_Minion_Melee"] = 48.0,
+			["Blue_Minion_Melee"] = 48.0,
+			["Blue_Minion_Wizard"] = 48.0,
+			["Red_Minion_Wizard"] = 48.0,
+			["Red_Minion_Basic"] = 48.0,
+			["Blue_Minion_Basic"] = 48.0,
+			["RabidWolf"] = 65.0,
+			["GiantWolf"] = 65.0,
+			["Wolf"] = 50.0,
+			["Wraith"] = 50.0,
+			["LesserWraith"] = 50.0,
+			["GreatWraith"] = 80.0,
+			["Golem"] = 80.0,
+			["SmallGolem"] = 80.0,
+			["AncientGolem"] = 100.0,
+			["LizardElder"] = 65.0,
+			["YoungLizard"] = 50.0,
+			["Lizard"] = 50.0,
+			["blueDragon"] = 100.0,
+			["redDragon"] = 100.0,
+			["OrderTurretDragon"] = 88.4,
+			["Dragon"] = 100.0,
+			["Worm"] = 100.0,
+
+	}
 end
 
 function OnDraw()
@@ -133,6 +173,7 @@ function OnDraw()
 			DrawCircle(point.x, point.y, point.z, 100, ARGB(214, 1,1,255))
 		end
 	end
+	if mdraw ~= nil and mdraw ~= 0 then DrawCircle(mdraw.x, mdraw.y, mdraw.z, 100, ARGB(200, 255,255,255)) end
 end
 
 function checkitems()
@@ -297,9 +338,9 @@ function Menu()
 	Config.LSettings.delay:addParam("delayE","Delay E for damage", SCRIPT_PARAM_ONOFF, true)	
 	
 	Config:addSubMenu("Skill Settings","SSettings")
-	Config.SSettings:addParam("Vpred","Use Vprediction", SCRIPT_PARAM_ONOFF, true)
-	Config.SSettings:addParam("Prod","Use Prodiction(VIP ONLY)", SCRIPT_PARAM_ONOFF, false)
-	Config.SSettings:addParam("Packet","Use Packets(VIP ONLY)", SCRIPT_PARAM_ONOFF, true)
+	Config.SSettings:addParam("Vpred", "Use Vprediction", SCRIPT_PARAM_ONOFF, true)
+	Config.SSettings:addParam("Prod", "Use Prodiction(VIP ONLY)", SCRIPT_PARAM_ONOFF, false)
+	Config.SSettings:addParam("Packet", "Use Packets(VIP ONLY)", SCRIPT_PARAM_ONOFF, true)
 	Config.SSettings:addParam("CheckQCollisions","check for minion collision on Q", SCRIPT_PARAM_ONOFF, false)
 	Config.SSettings:addParam("smite","Smite minion collisions for Q", SCRIPT_PARAM_ONOFF, false)
 	Config.SSettings:addParam("alwaysinsec","always insec R", SCRIPT_PARAM_ONOFF, true)
@@ -705,7 +746,10 @@ function OnProcessSpell(obj, spell)
 	if obj.isMe and spell.name == "BlindMonkEOne" then Etime = os.clock() end
 end
 
-function InsecLogic(flash)
+function InsecLogic()
+	if Config.InSettings.flash and Config.InSettings.Pflash then
+	
+	end
 		
 end
 
@@ -1047,17 +1091,13 @@ function useR(targ)
 	end
 end
 
-function GetHitBox(minion)
-	if minion.charName:lower():find("mech") then return 65.0 end
-	if minion.charName:lower():find("wizard") then return 48.0 end
-	if minion.charName:lower():find("basic") then return 48.0 end
-	if minion.charName:lower():find("wolf") then return 50.0 end
-	if minion.charName:lower():find("wraith") then return 50.0 end
-	if minion.charName:lower():find("golem") then return 80.0 end
-	if minion.charName:lower():find("dragon") then return 100.0 end
-	if minion.charName:lower():find("lizard") then return 80.0 end
-	if minion.charName:lower():find("worm") then return 100.0 end
-	return 50
+function GetHitBox(unit)
+	if unit ~= nil then
+		local foo = hitBoxes[unit.charName]
+		if foo ~= nil then return foo else return 65 end
+	else
+		return 65
+	end
 end
 
 --[[
@@ -1109,13 +1149,34 @@ function QoneCheck(targ)
 	
 	
 	if Config.SSettings.CheckQCollisions and targ.type ~= "obj_AI_Minion" then
-		PrintChat("Checking for collision")
 		if Config.Insec then
 			if not Config.InSettings.col then
-				useq = handle_Col(CheckMinionCollision(pos))
+				local minion, bval
+				if pos ~= nil then minion, bval = CheckMinionCollision(pos) else minion, bval = CheckMinionCollision(targ) end
+				if bval then
+					if minion ~= nil then
+						mdraw = minion
+						local foo = handle_Col(minion,bval)
+						useq = foo
+					end
+				else
+					useq = true
+					mdraw = 0
+				end
 			end
 		else
-			useq = handle_Col(CheckMinionCollision(pos))
+			local minion, bval
+			if pos ~= nil then minion, bval = CheckMinionCollision(pos) else minion, bval = CheckMinionCollision(targ) end
+			if bval then
+				useq = false
+				if minion ~= nil then
+					mdraw = minion
+					handle_Col(minion,bval)
+				end
+			else
+				useq = true
+				mdraw = 0
+			end
 		end
 	end
 	if useq then
@@ -1123,24 +1184,25 @@ function QoneCheck(targ)
 	end
 end
 
-function handle_Col(minion, istrue)
-	if not istrue then PrintChat("Col is "..tostring(istrue)) return true
-	else
+function handle_Col(minion, col)
+	if col then
 		PrintChat(tostring(minion.health).." and col = "..tostring(istrue))
 		if minion ~= nil and Config.SSettings.smite and smite ~= nil and GetDistance(minion, myHero) < 750 then
 			if Srdy and SmiteDmg() > minion.health then
 				CastSpell(smite, minion)
 			end
 		end
-		return false
+	else
+		PrintChat("Col is "..tostring(col))
 	end
 end
 
 function CheckCollision(unit, targ)
 	if targ ~= nil and unit ~= nil then
-		local projection, pointline, isonsegment = VectorPointProjectionOnLineSegment(myHero.visionPos, targ, Vector(targ.visionPos))
+		local projection, pointline, isonsegment = VectorPointProjectionOnLineSegment(Vector(myHero), targ, Vector(unit))
 		if projection ~= nil and pointline ~= nil and isonsegment ~= nil then
-			if isonsegment and (GetDistanceSqr(targ.visionPos, projection) <= (GetHitBox(targ) + 70)^2) then
+			PrintChat("called")
+			if isonsegment and (GetDistanceSqr(unit, projection) <= (GetHitBox(unit) + 75)^2) then
 				return true
 			end
 		end
@@ -1154,13 +1216,17 @@ function CheckMinionCollision(targ)
 	
 	local result = false
 	for i, minion in ipairs(Minions.objects) do
-		if CheckCollision(targ, minion) then
-			return minion, true
+		if minion ~= nil then
+			if CheckCollision(minion, targ) then
+				return minion, true
+			end
 		end
 	end
 	for i, minion in ipairs(JungleMinions.objects) do
-		if CheckCollision(targ, minion) then
-			return minion, true
+		if minion ~= nil then
+			if CheckCollision(minion, targ) then
+				return minion, true
+			end
 		end
 	end
 	return nil, false
