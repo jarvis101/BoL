@@ -64,6 +64,7 @@ function init_tables()
 		--{ x =  10600.58, y = 69.96, z = 2037.02 },
 		--{ x =  11102.92, y = -70.54, z = 2615.42 },
 		p1 = {
+			
 			{ x =  5370.155, y = 54.80, z = 7504.09 },
 			{ x =  8301.40, y = -65.47, z = 6500.795 },
 			{ x =  2333.93, y = 108.23, z = 4316.03 },
@@ -82,7 +83,34 @@ function init_tables()
 			{ x =  3377.52, y = 55.65, z = 5524.49 },
 			{ x =  3283.23, y = 55.56, z = 5057.66 },
 			{ x =  8700.68, y = 54.44, z = 4619.40 },
-			
+			{ x = 2425.26, y = 60.19, z = 5971.97 },
+			{ x = 1694.11, y = 53.56, z = 7663.27 },
+			{ x = 1289.31, y = 44.72, z = 8793.63 },
+			{ x = 2428.33, y = 53.36, z = 10055.94 },
+			{ x = 4621.51, y = -62.81, z = 10773.10 },
+			{ x = 5062.05, y = -62.90, z = 10294.80 },
+			{ x = 6412.95, y = -63.89, z = 8342.43 },
+			{ x = 7643.02, y = -64.74, z = 5966.23 },
+			{ x = 8174.08, y = 54.27, z = 1972.46 },
+			{ x = 11463.72, y = -61.82, z = 4260.54 },
+			{ x = 11353.78, y = 53.84, z = 5792.79 },
+			{ x = 9953.59, y = 55.12, z = 6596.66 },
+			{ x = 10449.16, y = 55.27, z = 7369.82 },
+			{ x = 11246.14, y = 62.62, z = 8345.20 },
+			{ x = 12304, y = 54.82, z = 6335.27 },
+			{ x = 11672.55, y = 50.35, z = 9706.66 },
+			{ x = 9445.07, y = 52.48, z = 11991.54 },
+			{ x = 8153.57, y = 49.93, z = 11206.17 },
+			{ x = 6207.45, y = 54.63, z = 11474.52 },
+			{ x = 5950.83, y = 53.95, z = 10856.94 },
+			{ x = 6607.18, y = 56.04, z = 9920.79 },
+			{ x = 7432.66, y = 55.58, z = 9109.00 },
+			{ x = 8153.57, y = 49.93, z = 11206.17 },
+			{ x = 6207.45, y = 54.63, z = 11474.52 },
+			{ x = 5950.83, y = 53.95, z = 10856.94 },
+			{ x = 6607.18, y = 56.04, z = 9920.79 },
+			{ x = 7432.66, y = 55.58, z = 9109.00 },
+			{ x = 4002.22, y = 51.98, z = 8065.74 },
 		},
 		
 		p2 = {
@@ -104,6 +132,34 @@ function init_tables()
 			{ x =  3043.24, y = 57.10, z = 5041.53 },
 			{ x =  3497.89, y = 55.65, z = 5545.92 },
 			{ x =  9114.60, y = -60.31, z = 4550.98 },
+			{ x = 2799.04, y = 54.99, z = 6221.92 },
+			{ x = 1840.84, y = 54.92, z = 8085.89 },
+			{ x = 1732.97, y = 54.92, z = 8705.24 },
+			{ x = 2803.87, y = -64.63, z = 10301.02 },
+			{ x = 4656.49, y = 51.20, z = 11344.77 },
+			{ x = 5495.71, y = 54.82, z = 10065.66 },
+			{ x = 6646.85, y = 56.02, z = 8527.19 },
+			{ x = 7459.78, y = 54.125, z = 5776.79 },
+			{ x = 8099.56, y = 52.60, z = 1481.36 },
+			{ x = 11746.04, y = 52.00, z = 4478.99 },
+			{ x = 11589.12, y = 54.92, z = 6298.78 },
+			{ x = 10404.91, y = 54.87, z = 6792.94 },
+			{ x = 10681.96, y = 54.87, z = 6901.92 },
+			{ x = 11550.38, y = 53.45, z = 8670.70 },
+			{ x = 12758.82, y = 55.31, z = 6549.91 },
+			{ x = 11817.62, y = 106.83, z = 10119.40 },
+			{ x = 9823.50, y = 106.22, z = 12130.48 },
+			{ x = 7697.02, y = 53.90, z = 10941.29 },
+			{ x = 6022.06, y = 39.59, z = 11933.42 },
+			{ x = 6444.79, y = 54.64, z = 10768.62 },
+			{ x = 6648.39, y = 54.64, z = 10386.56 },
+			{ x = 7189.93, y = 56.02, z = 8636.079 },
+			{ x = 7697.02, y = 53.90, z = 10941.29 },
+			{ x = 6022.06, y = 39.59, z = 11933.42 },
+			{ x = 6444.79, y = 54.64, z = 10768.62 },
+			{ x = 6648.39, y = 54.64, z = 10386.56 },
+			{ x = 7189.93, y = 56.02, z = 8636.08 },
+			{ x = 3642.75, y = 54.04, z = 7749.98 },
 		}
 	}
 	
@@ -283,6 +339,7 @@ end
 function Menu()
 	Config = scriptConfig("OP Lee", "Config")
 	
+	Config:addParam("log","log",SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("O"))
 	Config:addParam("Combo","Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 	Config:addParam("Debug","Debug", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("P"))
 	Config:addParam("Harass","Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
@@ -432,6 +489,7 @@ function OnTick()
 	if Config.Mobile then Mobile() end
 	if Config.WardJump then WJ() end
 	if Config.Debug then Debug() end
+	if Config.log then Log() end
 end
 
 
@@ -637,6 +695,7 @@ function Mobile(isInsec, noward)
 			
 			for i, pos in pairs(wardPoints.p1) do
 				if GetDistance(pos, myHero) < 100 then
+					PrintChat("I'm Here!")
 					local foo = SWJcheck(i, 1)
 					if foo ~= nil then
 						SWJ(foo)
@@ -647,6 +706,7 @@ function Mobile(isInsec, noward)
 			end
 			for i, pos in pairs(wardPoints.p2) do
 				if GetDistance(pos, myHero) < 100 then
+					PrintChat("I'm Here!")
 					local foo = SWJcheck(i, 2)
 					if foo ~= nil then
 						SWJ(foo)
@@ -788,19 +848,63 @@ function Rcheck(targ)
 	if GetDistance(targ) < Rrange then useR(targ) end
 end
 
+local toggle = 0
+local jltable = {
+	p1 = {},
+	p2 = {},
+}
+
 function Debug()
+	PrintChat("Data logged")
+	if toggle == 0 then toggle = 1
+	elseif toggle == 1 then toggle = 2
+	elseif toggle == 2 then toggle = 1
+	end
+
+	if toggle == 1 then
+		PrintChat("hello")
+		local str = "{ x = "
+		local str = (str..tostring(mousePos.x)..", y = "..tostring(mousePos.y)..", z = "..tostring(mousePos.z).." },")
+		PrintChat(str)
+		table.insert(jltable.p1, str)
+	end
+	if toggle == 2 then
+		PrintChat("hello")
+		local str = "{ x = "
+		local str = (str..tostring(mousePos.x)..", y = "..tostring(mousePos.y)..", z = "..tostring(mousePos.z).." },")
+		PrintChat(str)
+		table.insert(jltable.p2, str)
+	end
+	--PrintChat(tostring(mousePos.x))
+	--PrintChat(tostring(mousePos.y))
+	--PrintChat(tostring(mousePos.z))
 	--[[
-	PrintChat(tostring(mousePos.x))
-	PrintChat(tostring(mousePos.y))
-	PrintChat(tostring(mousePos.z))
-	]]--
 	for i = 1, 4000 do
 		local foo = GetInventorySlotItem(i)
 		local havefoo = (foo ~= nil and myHero:CanUseSpell(foo))
 		if havefoo then PrintChat(tostring(i)) end
 	end
-	
+	]]--
 	Config.Debug = false
+	
+end
+
+function Log()
+	PrintChat("Data logged")
+	local PATH = BOL_PATH.."Scripts\\Data"
+    local file = io.open(PATH.."\\Jlocs.txt", "w")
+	
+	for i, str in pairs(jltable.p1) do
+		file:write(str.."\n")
+	end
+	file:write("\n")
+	file:write("\n")
+	for i, str in pairs(jltable.p2) do
+		file:write(str.."\n")
+	end
+	file:close()
+	jltable = {p1 = {}, p2 = {},}
+	Config.log = false
 end
 
 function getNearestTarget(unit, ally)
@@ -810,7 +914,7 @@ function getNearestTarget(unit, ally)
 
 		FleeM:update()
 		FleeJ:update()
-		if ally then AllyMin:update() end		
+		if ally then AllyMin:update() end
 		if ally then
 			closestMinion = nil
 			nearestDistance = 0
