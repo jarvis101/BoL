@@ -1,4 +1,4 @@
-local version = "1.47"
+local version = "1.48"
 
 local autoupdateenabled = true
 local UPDATE_SCRIPT_NAME = "JTrist"
@@ -84,7 +84,7 @@ function InitInterrupt()
 end
 
 function OnProcessSpell(unit, spell)
-	if #ToInterrupt > 0 and JTrist.IntOpt and Rrdy then
+	if #ToInterrupt > 0 and JTrist.IntOpt.IntOpt and Rrdy then
 		for _, ability in pairs(ToInterrupt) do
 			if spell.name == ability and unit.team ~= myHero.team then
 				if GetDistance(unit,myHero) <= (getTrange() - 10) then
