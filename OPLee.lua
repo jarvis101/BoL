@@ -1321,18 +1321,20 @@ function QoneCheck(targ)
 	local hit
 	local pos
 	local useq = false
-	if targ.type == "obj_AI_Minion" and GetDistance(targ, myHero) < Qrange then useQ(targ) end
+	if targ.type == "obj_AI_Minion" and GetDistance(targ, myHero) < 1100 then useQ(targ) end
 	if Config.SSettings.Vpred and not Config.SSettings.Prod then
 		pos, hit = Vpred(targ,true)
 		if (hit == 2 or hit == 4 or hit == 5) and pos ~= nil then
 			useq = true
 		end
-	elseif Config.SSettings.Prod and not Config.SSettings.Vpred then
-		if PQP ~= nil and GetDistance(PQP, myHero) < Qrange then 
+	end
+	if Config.SSettings.Prod and not Config.SSettings.Vpred then
+		if PQP ~= nil and GetDistance(PQP, myHero) < 1100 then 
 			pos = PQP 
 			useq = true 
 		end
-	elseif GetDistance(targ, myHero) then
+	end
+	if ((not Config.SSettings.Prod and not Config.SSettings.Vpred) or (Config.SSettings.Prod and Config.SSettings.Vpred)) and GetDistance(targ, myHero) < 1100 then
 		pos = targ
 		useq = true
 	end
