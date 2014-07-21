@@ -13,6 +13,7 @@ local EnemyTable = {}
 local turrets = GetTurrets()
 local Prod
 local ProdQ
+local ProdI
 local myQ = myHero:GetSpellData(_Q)
 local myW = myHero:GetSpellData(_W)
 local myE = myHero:GetSpellData(_E)
@@ -303,6 +304,7 @@ function OnLoad()
 	if VIP_USER then
 		Prod = ProdictManager.GetInstance()
 		ProdQ = Prod:AddProdictionObject(_Q, 1000, 1800, 0.250, 70)
+		ProdI = Prod:AddProdictionObject(_W, 600, 1400, 0.250, 100)
 	end
 	ts = TargetSelector(TARGET_NEAR_MOUSE, 1300, DAMAGE_PHYSICAL)	
 	ts.name = "Target"
@@ -402,6 +404,7 @@ function Menu()
 		Config.InSettings:addParam("jkick","Ward Jump Insec", SCRIPT_PARAM_ONOFF, true)
 		Config.InSettings:addParam("flash","Use Flash if W on CD", SCRIPT_PARAM_ONOFF, true)
 		Config.InSettings:addParam("Pflash","Prioritize flash over ward jump", SCRIPT_PARAM_ONOFF, false)
+		Config.InSettings:addParam("Pred","use prediction for insec", SCRIPT_PARAM_ONOFF, true)
 		Config.InSettings:addParam("mouse","Move to mouse(otherwise will move to target)", SCRIPT_PARAM_ONOFF, false)
 		Config.InSettings:addParam("col","Ignore Collision for insec", SCRIPT_PARAM_ONOFF, true)
 		Config.InSettings:addSubMenu("Direction Settings", "Direct")
@@ -441,11 +444,11 @@ function Menu()
 	Config.InSettings.Apos:addParam("Ahp","Don't kick to if ally hp < %", SCRIPT_PARAM_SLICE, 20, 5, 101, 0)
 	
 	Config.InSettings:addSubMenu("Kick to Turret", "Tpos")
-	Config.InSettings.Tpos:addParam("rand2", "max distance from turret", SCRIPT_PARAM_INFO, "")
-	Config.InSettings.Tpos:addParam("dist", "to land target", SCRIPT_PARAM_SLICE, 200, 200, 775, 0)
-	Config.InSettings.Tpos:addParam("rand1", "If injured ally near", SCRIPT_PARAM_INFO, "")
-	Config.InSettings.Tpos:addParam("AvT","turret then next priority", SCRIPT_PARAM_ONOFF, true)
-	Config.InSettings.Tpos:addParam("AvTpcnt","MinHealth", SCRIPT_PARAM_SLICE, 20, 5, 101, 0)
+		Config.InSettings.Tpos:addParam("rand2", "max distance from turret", SCRIPT_PARAM_INFO, "")
+		Config.InSettings.Tpos:addParam("dist", "to land target", SCRIPT_PARAM_SLICE, 200, 200, 775, 0)
+		Config.InSettings.Tpos:addParam("rand1", "If injured ally near", SCRIPT_PARAM_INFO, "")
+		Config.InSettings.Tpos:addParam("AvT","turret then next priority", SCRIPT_PARAM_ONOFF, true)
+		Config.InSettings.Tpos:addParam("AvTpcnt","MinHealth", SCRIPT_PARAM_SLICE, 20, 5, 101, 0)
 	
 	Config:addSubMenu("Kill Steal", "KS")
 	Config.KS:addParam("bool","Use Kill Steal", SCRIPT_PARAM_ONOFF, true)
@@ -481,6 +484,7 @@ function OnTick()
 	
 	if VIP_USER and Config.SSettings.Prod and Target ~= nil then
 		PQP=ProdQ:GetPrediction(Target)
+		PQI = ProdI:GetPrediction(Target)
 	end
 	
 	if Config.KS.bool then
@@ -871,7 +875,18 @@ function WardInsec(targ)
 		end
 	end
 	if foo < 300 then
-		if JkickPos == nil then JkickPos = GetInsecFunc(1, Target) end
+		if JkickPos == nil then 
+			if Config.InSettings.Pred then
+				local foonew = PredInsec()
+				if foonew ~= nil then 
+					JkickPos = GetInsecFunc(1, foonew)
+				else
+					JkickPos = GetInsecFunc(1, Target)
+				end
+			else
+				JkickPos = GetInsecFunc(1, Target)
+			end
+		end
 		if Wrdy and myW.name == "BlindMonkWOne" and JkickPos ~= nil then					
 			if os.clock()-WardTime < 1 and os.clock()-WardTime > 0.001 then
 				JkickPos = nil
@@ -1234,7 +1249,24 @@ end
 
 
 
-
+function PredInsec()
+	if Config.SSettings.Vpred and not Config.Settings.Prod then
+		local pos, hit = VP:GetLineCastPosition(Target, 0.250, 100, 600, 1500)
+		if (hit == 2 or hit == 4 or hit == 5) and pos ~= nil then
+			return pos
+		else return nil end
+	end
+	if Config.SSettings.Prod and not Config.SSettings.Vpred then
+		if PQI ~= nil and GetDistance(PQI, myHero) < 300 then 
+			return PQI
+		else
+			return nil
+		end
+	end
+	if (not Config.SSettings.Prod and not Config.SSettings.Vpred) or (Config.SSettings.Prod and Config.SSettings.Vpred) then
+		return nil
+	end
+end
 
 
 function useQ(targ)
