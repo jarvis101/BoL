@@ -1250,7 +1250,7 @@ end
 
 
 function PredInsec()
-	if Config.SSettings.Vpred and not Config.Settings.Prod then
+	if Config.SSettings.Vpred and not Config.SSettings.Prod then
 		local pos, hit = VP:GetLineCastPosition(Target, 0.250, 100, 600, 1500)
 		if (hit == 2 or hit == 4 or hit == 5) and pos ~= nil then
 			return pos
