@@ -898,7 +898,7 @@ function WardInsec(targ)
 				CastSpell(ward, JkickPos.x, JkickPos.z)
 			end
 		end
-		if Rrdy and GetDistance(JkickPos) < 100 then Wsec then
+		if Rrdy and GetDistance(JkickPos) < 100 and Wsec then
 			Wsec = false
 			useR(Target)
 		end
