@@ -862,7 +862,7 @@ end
 
 function WardInsec(targ)
 	local foo = GetDistance(targ)
-	if Wsec and foo > 300 then Wsec = false end
+	if Wsec and foo > 350 then Wsec = false PrintChat("Error : 02, if you're not ulting, report on forums!") end
 	if foo > 300 then
 		if Config.InSettings.Wsec.Qmob then
 			QoneCheck(targ)
@@ -893,11 +893,12 @@ function WardInsec(targ)
 				Wsec = true
 				useW(recentWard)
 			elseif ward ~= nil then
-				if GetDistance(JkickPos, myHero) > 590 then	PrintChat("error with jkickpos") JkickPos = nil return end
+				if GetDistance(JkickPos, myHero) > 600 then	PrintChat("Error : 01 - If not ulting, report on forums!") JkickPos = nil return end
 				if JkickPos == nil then PrintChat("nil error") end
 				CastSpell(ward, JkickPos.x, JkickPos.z)
 			end
-		elseif not Wrdy or myW.name ~= "BlindMonkWOne" and Rrdy and Wsec then
+		end
+		if Rrdy and GetDistance(JkickPos) < 100 then Wsec then
 			Wsec = false
 			useR(Target)
 		end
